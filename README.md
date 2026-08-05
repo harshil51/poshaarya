@@ -1,298 +1,192 @@
-# Poshaarya
-
-> **Premium AI-powered Nutrition, Health, Calorie & Fitness Tracking Platform**  
-> Built for India, Designed for the World.
-
-![Version](https://img.shields.io/badge/version-1.0.0-green)
-![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)
-![License](https://img.shields.io/badge/license-UNLICENSED-blue)
-
----
-
-## Overview
-
-Poshaarya is a production-ready SaaS application for nutrition, health, calorie, and fitness tracking. It features a comprehensive Indian food database (100,000+ items), AI-powered insights, macro/micro nutrient tracking, exercise logging, and beautiful analytics dashboards.
-
-### Target Audience
-- Students & Working Professionals
-- Gym Members & Athletes
-- Weight Loss/Gain Users
-- Dieticians & Nutritionists
-- Families
-
-### Competitive Landscape
-Comparable to HealthifyMe, MyFitnessPal, Fitbit, Google Fit, Samsung Health, and Apple Health - with a unique focus on Indian cuisine and lifestyle.
+<div align="center">
+  <h1>Poshaarya</h1>
+  <p><b>Premium AI-powered Nutrition, Health, Calorie & Fitness Tracking Platform</b></p>
+  
+  <p>
+    <a href="#features">Features</a> •
+    <a href="#tech-stack">Tech Stack</a> •
+    <a href="#architecture">Architecture</a> •
+    <a href="#getting-started">Getting Started</a> •
+    <a href="#environment-variables">Environment Variables</a> •
+    <a href="#api-documentation">API Documentation</a>
+  </p>
+</div>
 
 ---
 
-## Tech Stack
+## 📖 Overview
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | HTML5, CSS3, JavaScript ES6+, EJS Templates, Chart.js |
-| **Backend** | Node.js, Express.js |
-| **Database** | MySQL 8.0 with Prisma ORM |
-| **Cache** | Redis 7 |
-| **Auth** | JWT (Access + Refresh Tokens), bcrypt |
-| **Storage** | Cloudinary |
-| **Email** | Nodemailer |
-| **Security** | Helmet, CORS, Rate Limiting, XSS Protection |
-| **Logging** | Winston, Morgan |
-| **Container** | Docker, Docker Compose |
-| **Web Server** | Nginx |
-| **CI/CD** | GitHub Actions |
+**Poshaarya** is a comprehensive, production-ready SaaS platform built to seamlessly track and improve users' nutrition, health, and fitness goals. It provides AI-powered predictions, personalized meal and workout plans, body measurement tracking, and a full suite of features intended for health professionals and everyday fitness enthusiasts. 
 
----
+## ✨ Features
 
-## Project Structure
+- **User & Profile Management**: Secure authentication (JWT), RBAC (Role-Based Access Control), fitness/health profiling, and organization/family group support.
+- **Nutrition & Meal Tracking**: Comprehensive food logging, barcode scanning, meal planning, custom recipes, and macro/micronutrient tracking.
+- **Fitness & Workout Logs**: Exercise cataloging, workout planning, logging routines, body measurements, and progress photos.
+- **AI-Powered Insights**: AI integration for predictions, dietary suggestions, and automated coaching logs.
+- **Payments & Subscriptions**: Integration with Stripe and Razorpay for subscription management and automated invoicing.
+- **Blogging & Community**: Built-in blogging engine with multi-language translation support.
+- **Real-time Notifications**: Engagement through webhooks, emails, and in-app alerts.
 
-```
-poshaarya/
-├── src/
-│   ├── app.js                 # Express app setup
-│   ├── server.js              # Server entry point
-│   ├── config/                # Configuration files
-│   │   ├── environment.js     # Environment variables
-│   │   ├── database.js        # Prisma client
-│   │   └── redis.js           # Redis cache client
-│   ├── controllers/           # Route handlers
-│   ├── routes/                # API route definitions
-│   ├── services/              # Business logic
-│   ├── repositories/          # Data access layer
-│   ├── middlewares/           # Express middlewares
-│   ├── validators/            # Request validation
-│   ├── errors/                # Error classes & codes
-│   ├── logger/                # Winston & Morgan config
-│   ├── utils/                 # Utility functions
-│   ├── helpers/               # Helper functions
-│   ├── constants/             # Enums & constants
-│   ├── types/                 # Type definitions
-│   ├── cache/                 # Cache utilities
-│   ├── tasks/                 # Cron jobs
-│   └── templates/             # Email templates
-├── prisma/
-│   ├── schema.prisma          # Database schema
-│   └── seeds/                 # Seed data
-├── public/
-│   ├── css/                   # Stylesheets
-│   │   ├── main.css           # Design system
-│   │   ├── layouts/           # Layout styles
-│   │   ├── pages/             # Page-specific styles
-│   │   ├── components/        # Component styles
-│   │   └── themes/            # Theme files
-│   ├── js/                    # JavaScript
-│   │   ├── components/        # Reusable components
-│   │   ├── pages/             # Page scripts
-│   │   ├── utils/             # Utilities
-│   │   └── charts/            # Chart configurations
-│   └── images/                # Images & icons
-├── views/
-│   ├── layouts/               # Layout templates
-│   ├── pages/                 # Page templates
-│   │   ├── auth/              # Authentication pages
-│   │   ├── dashboard/         # Dashboard pages
-│   │   ├── admin/             # Admin panel pages
-│   │   └── static/            # Static pages
-│   ├── partials/              # Reusable partials
-│   └── components/            # UI components
-├── tests/                     # Test files
-├── docs/                      # Documentation
-├── docker/                    # Docker configs
-│   └── nginx/                 # Nginx configuration
-├── .github/workflows/         # CI/CD pipelines
-└── docker-compose.yml         # Docker orchestration
+## 🛠 Tech Stack
+
+### Backend
+- **Framework**: Node.js with Express.js
+- **Database**: MySQL 8.0, managed via **Prisma ORM**
+- **Caching & Queues**: Redis (ioredis)
+- **Authentication**: JWT, bcryptjs, OTP, and session management
+- **Validation**: Zod & Joi
+- **Logging**: Winston & Morgan
+- **Security**: Helmet, xss, hpp, csurf, express-rate-limit
+
+### Frontend
+- **Architecture**: Static HTML, CSS, and Vanilla JS served directly from the backend
+- **Templating**: EJS (for specific server-side rendered views)
+
+### Infrastructure & DevOps
+- **Containerization**: Docker & Docker Compose
+- **CI/CD**: GitHub Actions (`ci.yml`)
+- **Cloud Services**: Cloudinary (Media management), SMTP/Nodemailer (Emails)
+
+## 🏗 Architecture & Project Structure
+
+The codebase strictly adheres to a modular, layered architecture promoting scalability and separation of concerns.
+
+```text
+├── .github/workflows/    # CI/CD pipelines
+├── docker/               # Docker configs (MySQL init, Nginx)
+├── docs/                 # Extended project documentation
+├── frontend/             # Static frontend assets (HTML, JS, CSS)
+├── prisma/               # Prisma schema, migrations, and seeds
+├── src/                  # Core backend application
+│   ├── config/           # Environment and service configurations
+│   ├── controllers/      # Route handlers and business logic entry points
+│   ├── dto/              # Data Transfer Objects
+│   ├── errors/           # Custom error classes
+│   ├── jobs/             # Cron jobs and scheduled tasks
+│   ├── logger/           # Winston and Morgan configurations
+│   ├── middlewares/      # Express middlewares (Auth, Rate Limiting, Security)
+│   ├── policies/         # Authorization policies
+│   ├── queues/           # Redis-backed job queues
+│   ├── repositories/     # Data access layer (Prisma abstractions)
+│   ├── routes/           # API route definitions
+│   ├── services/         # Core business logic
+│   ├── tasks/            # Background tasks
+│   ├── templates/        # Email/PDF templates
+│   ├── utils/            # Helper functions
+│   └── validators/       # Input validation schemas (Zod/Joi)
+├── tests/                # Unit and integration tests (Jest)
+└── package.json
 ```
 
----
-
-## Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 20+
-- MySQL 8.0+
-- Redis 7+
-- npm or yarn
+- Node.js (v20+)
+- MySQL (v8.0+)
+- Redis (v7+)
+- Docker & Docker Compose (optional, but recommended)
 
-### Installation
-
+### 1. Clone the repository
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/poshaarya.git
+git clone https://github.com/poshaarya/poshaarya.git
 cd poshaarya
+```
 
-# Install dependencies
+### 2. Install Dependencies
+```bash
 npm install
+```
 
-# Set up environment
+### 3. Environment Configuration
+Copy the sample environment file and configure it based on your local setup.
+```bash
 cp .env.example .env
-# Edit .env with your configuration
+```
+*(See the [Environment Variables](#environment-variables) section below for required keys).*
 
-# Generate Prisma client
+### 4. Database Setup (Prisma)
+Generate the Prisma client and push the schema to your local MySQL database.
+```bash
 npm run prisma:generate
-
-# Run database migrations
-npm run prisma:migrate
-
-# Seed the database (optional)
+npm run prisma:push
+```
+*Optional: Seed the database with initial data.*
+```bash
 npm run prisma:seed
+```
 
-# Start development server
+### 5. Running the Application
+
+**Development Mode (Local)**
+```bash
 npm run dev
 ```
 
-Visit `http://localhost:8080` to access the application.
-
-### Docker Setup
-
+**Production Mode (Docker)**
+Use the provided `docker-compose.yml` to spin up the App, MySQL, Redis, and Nginx.
 ```bash
-# Build and start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f app
-
-# Stop services
-docker-compose down
+npm run docker:up
 ```
 
----
+## 🔐 Environment Variables
 
-## Database
+The following environment variables must be configured in your `.env` file:
 
-The database schema includes 25+ tables covering:
+| Category | Variables | Description |
+|---|---|---|
+| **App** | `NODE_ENV`, `APP_PORT`, `API_PREFIX` | Core application settings |
+| **Database** | `DATABASE_URL`, `DB_HOST`, `DB_NAME` | MySQL connection strings |
+| **Redis** | `REDIS_HOST`, `REDIS_PORT` | Redis cache connection |
+| **JWT** | `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` | Secrets for token generation |
+| **Cloudinary** | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` | Media upload credentials |
+| **Email (SMTP)**| `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` | Nodemailer configuration |
+| **Security** | `RATE_LIMIT_WINDOW_MS`, `CORS_ORIGIN` | API protection settings |
 
-- **Users & Auth** - Users, Profiles, Sessions, RefreshTokens, OTP
-- **Food & Nutrition** - Foods, Nutrition, FoodCategories
-- **Meals** - Meals, MealItems
-- **Exercise** - Exercises, ExerciseLogs
-- **Tracking** - WaterLogs, WeightLogs, ProgressPhotos, DailyCalories
-- **Gamification** - Achievements, Badges, UserAchievements
-- **Content** - Blogs, Recipes
-- **Monetization** - Subscriptions, Payments
-- **Communication** - Notifications, Feedback, ContactMessages
+> **TODO:** Add documentation on how to acquire Stripe/Razorpay and AI provider API keys.
 
-### Key Design Decisions
+## 📡 API Documentation
 
-- **Soft deletes** with `isDeleted` and `deletedAt` fields
-- **Cascade deletes** for related data
-- **Full-text search** indexes on food names
-- **Composite unique constraints** where appropriate
-- **Enum types** for status, category, and type fields
+The REST API is versioned and prefixed with `/api/v1`. 
 
----
+Swagger documentation is fully integrated. To view the interactive API docs:
+1. Ensure the server is running.
+2. Run the swagger generation script (if not automatically served):
+   ```bash
+   npm run swagger
+   ```
+3. Navigate to `http://localhost:8080/api-docs` (or the respective swagger route defined in `src/config/swagger.js`) in your browser.
 
-## Environment Variables
+## 💻 Development Workflow
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NODE_ENV` | Environment mode | `development` |
-| `DATABASE_URL` | MySQL connection string | - |
-| `REDIS_HOST` | Redis host | `localhost` |
-| `JWT_ACCESS_SECRET` | JWT signing secret (min 32 chars) | - |
-| `JWT_REFRESH_SECRET` | Refresh token secret (min 32 chars) | - |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | - |
-| `SMTP_HOST` | Email server host | `smtp.gmail.com` |
-| `CORS_ORIGIN` | Allowed CORS origin | `http://localhost:8080` |
-| `BCRYPT_SALT_ROUNDS` | Password hashing rounds | `12` |
+We use standard linting and testing practices to maintain code quality.
 
-Full list available in `.env.example`.
+- **Linting**: 
+  ```bash
+  npm run lint
+  npm run lint:fix
+  ```
+- **Testing**: 
+  ```bash
+  npm run test            # Run all tests with coverage
+  npm run test:unit       # Run only unit tests
+  npm run test:integration# Run only integration tests
+  ```
+- **Database Studio**:
+  ```bash
+  npm run prisma:studio   # Opens a visual editor for your local DB
+  ```
 
----
+## 🤝 Contributing
 
-## API (Coming Soon)
+We welcome contributions! Please follow the steps below:
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Commit your changes: `git commit -m "feat: add some feature"`
+4. Push to the branch: `git push origin feature/your-feature-name`
+5. Open a Pull Request.
 
-The REST API will be available at `/api/v1/` with endpoints for:
-
-- `POST /api/v1/auth/*` - Authentication
-- `GET/POST /api/v1/users/*` - User management
-- `GET /api/v1/foods/*` - Food database
-- `POST /api/v1/meals/*` - Meal logging
-- `POST /api/v1/exercise/*` - Exercise logging
-- `GET /api/v1/analytics/*` - Analytics & reports
-
-API documentation will be available via Swagger UI at `/api-docs`.
-
----
-
-## Features
-
-### User Features
-- **Dashboard** - Real-time health summary with charts
-- **Indian Food Database** - 100,000+ items with accurate nutrition
-- **Calorie Tracking** - Daily, weekly, monthly views
-- **Macro/Micro Tracking** - Protein, carbs, fat, vitamins, minerals
-- **Meal Planner** - AI-powered meal suggestions
-- **Water Tracker** - Hydration monitoring with reminders
-- **Exercise Logger** - Track workouts and calories burned
-- **Weight Tracker** - Progress charts and trend analysis
-- **BMI/BMR/TDEE Calculator** - Automated calculations
-- **Achievements & Streaks** - Gamification system
-- **Dark/Light Mode** - Theme switching
-- **Responsive Design** - Mobile, tablet, desktop
-
-### Admin Features
-- User management
-- Food database management
-- Exercise management
-- Content management (Blogs, Recipes)
-- Subscription & Payment management
-- Analytics & Reports
-- Feedback management
+Make sure your code passes all linting (`npm run lint`) and tests (`npm run test`) before submitting a PR.
 
 ---
-
-## Security
-
-- JWT-based authentication with refresh tokens
-- Password hashing with bcrypt (12 rounds)
-- Rate limiting on all API endpoints
-- Helmet security headers
-- CORS protection
-- XSS sanitization
-- Input validation with Joi
-- SQL injection prevention via Prisma
-- Secure cookie handling
-- Role-based access control (RBAC)
-
----
-
-## Deployment
-
-### Production Checklist
-- [ ] Configure SSL certificates
-- [ ] Set strong JWT secrets (32+ characters)
-- [ ] Enable Redis cache
-- [ ] Configure Cloudinary for image uploads
-- [ ] Set up SMTP for emails
-- [ ] Enable rate limiting
-- [ ] Run database migrations
-- [ ] Build and push Docker images
-- [ ] Configure monitoring and alerts
-
-### Using Docker (Production)
-
-```bash
-# Build production image
-docker build -t poshaarya:latest .
-
-# Deploy with docker-compose
-docker-compose -f docker-compose.yml up -d
-
-# Run migrations
-docker-compose exec app npx prisma migrate deploy
-```
-
----
-
-## License
-
-UNLICENSED - Proprietary software. All rights reserved.
-
----
-
-## Support
-
-- Email: support@poshaarya.com
-- Website: https://poshaarya.com
-
-Built with ❤️ for a healthier India.
+*Built with ❤️ by Poshaarya.*
