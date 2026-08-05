@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poshaarya — Sign Up (Preview)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Work+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!--
+  Poshaarya — Sign Up
+  Redesign notes (for future-you / the team):
+  - Token system carried over from the brand's forest+gold palette, pushed into
+    a "terrarium glass" concept: the card reads as layered panes of glass
+    stacked like leaves, lit from one warm gold source.
+  - Signature element: the card is a real 3D object (CSS perspective + JS
+    pointer tracking) — it tilts toward the cursor, two blurred "leaf" panes
+    sit behind it at slightly different depths/rotations for parallax, and a
+    soft specular highlight drifts across the glass as you move.
+  - Everything degrades gracefully: prefers-reduced-motion disables tilt/drift,
+    touch devices skip the pointer listener entirely, and the card still looks
+    complete flat with no JS.
+  - Form formatting fixes: icon-anchored inputs, consistent 8px rhythm,
+    vertically centered password toggle, aligned checkbox baseline, and a
+    strength meter that sits inside the password field's rhythm instead of
+    floating below it.
+-->
+  <style>
+    #signup-scope {
+      --bg-deep: #0d1a11;
+      --bg-mid: #16281b;
+      --bg-mid-2: #1c2f22;
+      --moss: #3a5940;
+      --gold: #d9a64e;
+      --gold-soft: #f0c775;
+      --gold-dim: #b98a3f;
+      --cream: #f4efe2;
+      --cream-dim: rgba(244, 239, 226, 0.68);
+      --cream-faint: rgba(244, 239, 226, 0.4);
+      --sage-glow: #8fbba0;
+      --danger: #e58a7a;
+      --success: #7fbf94;
+      --glass-bg: rgba(244, 239, 226, 0.055);
+      --glass-bg-strong: rgba(244, 239, 226, 0.09);
+      --glass-border: rgba(244, 239, 226, 0.14);
+      --radius-lg: 26px;
+      --radius-md: 13px;
+      --radius-sm: 10px;
+
+      font-family: 'Work Sans', 'Inter', -apple-system, sans-serif;
+      color: var(--cream);
+      background:
+        radial-gradient(ellipse 62% 46% at 85% 6%, rgba(217, 166, 78, 0.17), transparent 60%),
+        radial-gradient(ellipse 58% 52% at 6% 96%, rgba(143, 187, 160, 0.13), transparent 60%),
+        linear-gradient(160deg, var(--bg-deep) 0%, var(--bg-mid) 55%, #142a1c 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #signup-scope *,
+    #signup-scope *::before,
+    #signup-scope *::after {
+      box-sizing: border-box;
+    }
+
+    /* ── Ambient blobs + drifting motes ───────────────────────────── */
+
+    #signup-scope .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(70px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.55;
+    }
+
+    #signup-scope .blob-gold {
+      width: 440px;
+      height: 440px;
+      top: -130px;
+      right: -110px;
+      background: radial-gradient(circle, rgba(217, 166, 78, 0.34), transparent 70%);
+      animation: signup-drift1 24s ease-in-out infinite;
+    }
+
+    #signup-scope .blob-sage {
+      width: 400px;
+      height: 400px;
+      bottom: -150px;
+      left: -130px;
+      background: radial-gradient(circle, rgba(143, 187, 160, 0.28), transparent 70%);
+      animation: signup-drift2 28s ease-in-out infinite;
+    }
+
+    #signup-scope .motes {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #signup-scope .mote {
+      position: absolute;
+      width: var(--s, 4px);
+      height: var(--s, 4px);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(240, 199, 117, 0.9), rgba(240, 199, 117, 0));
+      animation: signup-mote-drift var(--dur, 14s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+      opacity: 0.7;
+    }
+
+    @keyframes signup-drift1 {
+
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
+
+      50% {
+        transform: translate(-30px, 40px);
+      }
+    }
+
+    @keyframes signup-drift2 {
+
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
+
+      50% {
+        transform: translate(30px, -30px);
+      }
+    }
+
+    @keyframes signup-mote-drift {
+      0% {
+        transform: translate(0, 0);
+        opacity: 0;
+      }
+
+      15% {
+        opacity: 0.8;
+      }
+
+      50% {
+        transform: translate(var(--dx, 20px), var(--dy, -30px));
+      }
+
+      85% {
+        opacity: 0.6;
+      }
+
+      100% {
+        transform: translate(0, 0);
+        opacity: 0;
+      }
+    }
+
+    /* ── 3D scene + layered glass card ────────────────────────────── */
+
+    #signup-scope .scene {
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      z-index: 1;
+      perspective: 1600px;
+    }
+
+    #signup-scope .leaf-pane {
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-lg);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+
+    #signup-scope .leaf-pane-2 {
+      transform: rotate(-5deg) translate(-16px, 20px) translateZ(-60px);
+      opacity: 0.45;
+      z-index: 0;
+    }
+
+    #signup-scope .leaf-pane-1 {
+      transform: rotate(3.5deg) translate(12px, -12px) translateZ(-30px);
+      opacity: 0.65;
+      z-index: 1;
+    }
+
+    #signup-scope .auth-card {
+      position: relative;
+      z-index: 2;
+      background: linear-gradient(155deg, var(--glass-bg-strong) 0%, var(--glass-bg) 100%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.4),
+        0 4px 14px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 0 60px rgba(217, 166, 78, 0.03);
+      padding: 46px 42px 38px;
+      transform-style: preserve-3d;
+      transform: rotateX(0deg) rotateY(0deg);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+      animation: signup-card-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+      overflow: hidden;
+    }
+
+    #signup-scope .auth-card::after {
+      /* specular sheen, driven by --mx/--my custom props from JS */
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(480px circle at var(--mx, 50%) var(--my, 0%),
+          rgba(255, 255, 255, 0.1),
+          transparent 45%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    #signup-scope .scene:hover .auth-card::after {
+      opacity: 1;
+    }
+
+    @keyframes signup-card-in {
+      from {
+        opacity: 0;
+        transform: translateY(18px) rotateX(4deg);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg);
+      }
+    }
+
+    @media (max-width: 520px) {
+      #signup-scope .auth-card {
+        padding: 34px 24px 28px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      #signup-scope .blob,
+      #signup-scope .mote {
+        animation: none;
+      }
+
+      #signup-scope .auth-card,
+      #signup-scope .leaf-pane {
+        transition: none;
+      }
+    }
+
+    /* ── Header / logo (popped forward in 3D space) ───────────────── */
+
+    #signup-scope .auth-header {
+      text-align: center;
+      margin-bottom: 30px;
+      transform: translateZ(38px);
+    }
+
+    #signup-scope .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      margin-bottom: 26px;
+    }
+
+    #signup-scope .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--sage-glow) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--bg-deep);
+      box-shadow: 0 8px 18px rgba(217, 166, 78, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    #signup-scope .logo-word {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      background: linear-gradient(90deg, var(--gold-soft), var(--sage-glow));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    #signup-scope .auth-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 500;
+      font-size: 30px;
+      line-height: 1.15;
+      margin: 0 0 8px;
+      color: var(--cream);
+    }
+
+    #signup-scope .auth-subtitle {
+      font-size: 15px;
+      color: var(--cream-dim);
+      margin: 0;
+    }
+
+    #signup-scope .alert {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      margin-bottom: 20px;
+      transform: translateZ(20px);
+    }
+
+    #signup-scope .alert-danger {
+      background: rgba(229, 138, 122, 0.14);
+      border: 1px solid rgba(229, 138, 122, 0.35);
+      color: #f2b6ab;
+    }
+
+    /* ── Form ──────────────────────────────────────────────────────── */
+
+    #signup-scope .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      transform: translateZ(18px);
+    }
+
+    #signup-scope .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 480px) {
+      #signup-scope .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    #signup-scope .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    #signup-scope .form-label {
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--cream-faint);
+    }
+
+    #signup-scope .input-shell {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: rgba(13, 26, 17, 0.4);
+      border: 1px solid rgba(244, 239, 226, 0.16);
+      border-radius: var(--radius-sm);
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    #signup-scope .input-shell:hover {
+      border-color: rgba(244, 239, 226, 0.28);
+    }
+
+    #signup-scope .input-shell:focus-within {
+      border-color: var(--gold);
+      background: rgba(13, 26, 17, 0.6);
+      box-shadow: 0 0 0 3px rgba(217, 166, 78, 0.16), inset 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    #signup-scope .input-shell.is-invalid {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(229, 138, 122, 0.14);
+    }
+
+    #signup-scope .input-shell.is-valid {
+      border-color: var(--success);
+    }
+
+    #signup-scope .input-icon {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      margin-left: 14px;
+      color: var(--cream-faint);
+      transition: color 0.18s ease;
+    }
+
+    #signup-scope .input-shell:focus-within .input-icon {
+      color: var(--gold-soft);
+    }
+
+    #signup-scope .form-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--cream);
+    }
+
+    #signup-scope .form-input::placeholder {
+      color: var(--cream-faint);
+    }
+
+    #signup-scope .field-msg {
+      font-size: 12px;
+      min-height: 15px;
+      color: var(--cream-faint);
+      padding-left: 2px;
+    }
+
+    #signup-scope .field-msg.error {
+      color: var(--danger);
+    }
+
+    #signup-scope .field-msg.success {
+      color: var(--success);
+    }
+
+    #signup-scope .password-toggle {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      margin-right: 3px;
+      background: none;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cream-faint);
+      cursor: pointer;
+      border-radius: 8px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    #signup-scope .password-toggle:hover {
+      color: var(--cream);
+      background: rgba(244, 239, 226, 0.08);
+    }
+
+    #signup-scope .password-toggle:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 1px;
+    }
+
+    #signup-scope .password-strength {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+      padding: 0 2px;
+    }
+
+    #signup-scope .strength-bar {
+      flex: 1;
+      height: 5px;
+      border-radius: 4px;
+      background: rgba(244, 239, 226, 0.12);
+      overflow: hidden;
+    }
+
+    #signup-scope .strength-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 4px;
+      background: var(--danger);
+      transition: width 0.25s ease, background 0.25s ease;
+    }
+
+    #signup-scope .strength-text {
+      font-size: 12px;
+      color: var(--cream-faint);
+      min-width: 64px;
+      text-align: right;
+    }
+
+    #signup-scope .terms-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    #signup-scope .terms-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      accent-color: var(--gold);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    #signup-scope .terms-row label {
+      font-size: 13.5px;
+      color: var(--cream-dim);
+      line-height: 1.55;
+      cursor: pointer;
+    }
+
+    #signup-scope .terms-row a {
+      color: var(--gold-soft);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(232, 194, 126, 0.35);
+    }
+
+    #signup-scope .terms-row a:hover {
+      border-color: var(--gold-soft);
+    }
+
+    /* ── Buttons ───────────────────────────────────────────────────── */
+
+    #signup-scope .btn {
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      padding: 13px 20px;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.15s ease;
+    }
+
+    #signup-scope .btn:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    #signup-scope .btn-primary {
+      position: relative;
+      width: 100%;
+      background: linear-gradient(120deg, var(--gold) 0%, var(--gold-soft) 100%);
+      color: #20301f;
+      box-shadow: 0 10px 26px rgba(217, 166, 78, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      margin-top: 4px;
+      overflow: hidden;
+    }
+
+    #signup-scope .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+      transform: skewX(-20deg);
+      transition: left 0.55s ease;
+    }
+
+    #signup-scope .btn-primary:hover::before {
+      left: 130%;
+    }
+
+    #signup-scope .btn-primary:hover {
+      box-shadow: 0 12px 30px rgba(217, 166, 78, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+
+    #signup-scope .btn-primary:focus-visible {
+      outline: 2px solid var(--cream);
+      outline-offset: 2px;
+    }
+
+    #signup-scope .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #signup-scope .btn-outline {
+      background: rgba(244, 239, 226, 0.04);
+      border: 1px solid rgba(244, 239, 226, 0.18);
+      color: var(--cream);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      font-weight: 500;
+    }
+
+    #signup-scope .btn-outline:hover {
+      background: rgba(244, 239, 226, 0.09);
+      border-color: rgba(244, 239, 226, 0.3);
+      transform: translateY(-1px);
+    }
+
+    #signup-scope .btn-outline:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    #signup-scope .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 26px 0 18px;
+      color: var(--cream-faint);
+      font-size: 12.5px;
+      transform: translateZ(10px);
+    }
+
+    #signup-scope .auth-divider::before,
+    #signup-scope .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(244, 239, 226, 0.14);
+    }
+
+    #signup-scope .auth-social {
+      display: flex;
+      gap: 12px;
+      transform: translateZ(10px);
+    }
+
+    #signup-scope .auth-footer-text {
+      text-align: center;
+      font-size: 14px;
+      color: var(--cream-dim);
+      margin: 26px 0 0;
+      transform: translateZ(10px);
+    }
+
+    #signup-scope .auth-footer-text a {
+      color: var(--gold-soft);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    #signup-scope .auth-footer-text a:hover {
+      text-decoration: underline;
+    }
+
+    #signup-scope .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    /* Modal Styles */
+    .signup-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .signup-modal-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .signup-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -45%) scale(0.95);
+      background: rgba(22, 40, 27, 0.95);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      width: 90%;
+      max-width: 400px;
+      z-index: 1001;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      text-align: center;
+    }
+
+    .signup-modal.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .modal-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(127, 191, 148, 0.1);
+      color: var(--success);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+
+    .modal-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-title {
+      font-family: 'Fraunces', serif;
+      font-size: 28px;
+      color: var(--gold-soft);
+      margin: 0 0 12px;
+    }
+
+    .modal-desc {
+      font-size: 15px;
+      color: var(--cream-dim);
+      line-height: 1.5;
+      margin: 0 0 32px;
+    }
+  </style>
+
+  <div id="signup-scope">
+    <div class="blob blob-gold" aria-hidden="true"></div>
+    <div class="blob blob-sage" aria-hidden="true"></div>
+    <div class="motes" id="motes" aria-hidden="true"></div>
+
+    <div class="scene" id="scene">
+      <div class="leaf-pane leaf-pane-2" aria-hidden="true"></div>
+      <div class="leaf-pane leaf-pane-1" aria-hidden="true"></div>
+
+      <div class="auth-card" id="authCard">
+
+        <div class="auth-header">
+          <a href="/" class="brand-mark">
+            <div class="logo-icon">P</div>
+            <span class="logo-word">Poshaarya</span>
+          </a>
+          <h1 class="auth-title">Create your account</h1>
+          <p class="auth-subtitle">Start your wellness journey today</p>
+        </div>
+
+
+
+        <form class="auth-form" action="/signup" method="POST" novalidate id="signupForm">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="firstName">First name</label>
+              <div class="input-shell" id="firstNameShell">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <input type="text" id="firstName" name="firstName" class="form-input" placeholder="John"
+                  autocomplete="given-name" required>
+              </div>
+              <span class="field-msg" id="firstNameMsg"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lastName">Last name</label>
+              <div class="input-shell" id="lastNameShell">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <input type="text" id="lastName" name="lastName" class="form-input" placeholder="Doe"
+                  autocomplete="family-name" required>
+              </div>
+              <span class="field-msg" id="lastNameMsg"></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email address</label>
+            <div class="input-shell" id="emailShell">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16v16H4z" opacity="0" />
+                <path d="M4 6h16v12H4z" />
+                <path d="m4 7 8 6 8-6" />
+              </svg>
+              <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com"
+                autocomplete="email" required>
+            </div>
+            <span class="field-msg" id="emailMsg"></span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="phone">Phone number <span
+                style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--cream-faint);">(optional)</span></label>
+            <div class="input-shell" id="phoneShell">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+              <input type="tel" id="phone" name="phone" class="form-input" placeholder="+91 98765 43210"
+                autocomplete="tel">
+            </div>
+            <span class="field-msg" id="phoneMsg"></span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <div class="input-shell" id="passwordShell">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <input type="password" id="password" name="password" class="form-input"
+                placeholder="Create a strong password" autocomplete="new-password" required>
+              <button type="button" class="password-toggle" onclick="signupTogglePassword('password', this)"
+                aria-label="Show password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+            <div class="password-strength">
+              <div class="strength-bar">
+                <div class="strength-fill" id="strengthFill"></div>
+              </div>
+              <span class="strength-text" id="strengthText" aria-live="polite">&nbsp;</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirmPassword">Confirm password</label>
+            <div class="input-shell" id="confirmPasswordShell">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <input type="password" id="confirmPassword" name="confirmPassword" class="form-input"
+                placeholder="Confirm your password" autocomplete="new-password" required>
+              <button type="button" class="password-toggle" onclick="signupTogglePassword('confirmPassword', this)"
+                aria-label="Show password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+            <span class="field-msg" id="confirmMsg"></span>
+          </div>
+
+          <div class="form-group terms-row">
+            <input type="checkbox" id="terms" name="terms" required>
+            <label for="terms">I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy
+                Policy</a></label>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submitBtn">Create account</button>
+        </form>
+
+        <div class="auth-divider"><span>Or continue with</span></div>
+
+        <div class="auth-social">
+          <button type="button" class="btn btn-outline social-btn">
+            <svg width="17" height="17" viewBox="0 0 24 24">
+              <path fill="#EA4335"
+                d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.2s2.7-6.2 6-6.2c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.2 14.6 2.2 12 2.2 6.9 2.2 2.7 6.4 2.7 12s4.2 9.8 9.3 9.8c5.4 0 9-3.8 9-9.1 0-.6-.1-1.1-.2-1.5H12z" />
+            </svg>
+            Google
+          </button>
+          <button type="button" class="btn btn-outline social-btn">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 .3a12 12 0 00-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.7-1.4-1.7-1.1-.8.1-.8.1-.8 1.2.1 1.9 1.3 1.9 1.3 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 016 0C17.5 5 18.5 5.3 18.5 5.3c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0012 .3z" />
+            </svg>
+            GitHub
+          </button>
+        </div>
+
+        <p class="auth-footer-text">Already have an account? <a href="/login">Sign in</a></p>
+
+      </div>
+    </div>
+
+    <!-- Signup Success Modal -->
+    <div class="signup-modal-backdrop" id="signupModalBackdrop"></div>
+    <div class="signup-modal" id="signupModal">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <h2 class="modal-title">Ready to go!</h2>
+      <p class="modal-desc">You are successfully signed up. Now you can log in and start your journey towards fitness.
+      </p>
+      <button class="btn btn-primary" style="width: 100%" onclick="window.location.href='/login'">Go to Login</button>
+    </div>
+
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ── Drifting motes (skipped politely for reduced-motion) ──────────
+      var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var motesEl = document.getElementById('motes');
+      if (motesEl && !prefersReducedMotion) {
+        var count = 14;
+        for (var i = 0; i < count; i++) {
+          var m = document.createElement('div');
+          m.className = 'mote';
+          m.style.setProperty('--s', (2 + Math.random() * 3) + 'px');
+          m.style.setProperty('--dur', (10 + Math.random() * 10) + 's');
+          m.style.setProperty('--delay', (Math.random() * -20) + 's');
+          m.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+          m.style.setProperty('--dy', (Math.random() * -60 - 10) + 'px');
+          m.style.left = Math.random() * 100 + '%';
+          m.style.top = Math.random() * 100 + '%';
+          motesEl.appendChild(m);
+        }
+      }
+
+      // ── 3D pointer tilt on the card, with parallax on the leaf panes ──
+      var scene = document.getElementById('scene');
+      var card = document.getElementById('authCard');
+      var isTouch = window.matchMedia('(hover: none)').matches;
+
+      if (scene && card && !prefersReducedMotion && !isTouch) {
+        var panes = scene.querySelectorAll('.leaf-pane');
+
+        scene.addEventListener('mousemove', function (e) {
+          var rect = scene.getBoundingClientRect();
+          var px = (e.clientX - rect.left) / rect.width;   // 0..1
+          var py = (e.clientY - rect.top) / rect.height;    // 0..1
+
+          var rotateY = (px - 0.5) * 12;   // left/right tilt
+          var rotateX = (0.5 - py) * 10;   // up/down tilt
+
+          card.style.transform = 'rotateX(' + rotateX.toFixed(2) + 'deg) rotateY(' + rotateY.toFixed(2) + 'deg)';
+          card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+          card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+
+          panes.forEach(function (pane, idx) {
+            var depth = (idx + 1) * 6;
+            var ox = (px - 0.5) * depth;
+            var oy = (py - 0.5) * depth;
+            pane.style.transform = pane.classList.contains('leaf-pane-2')
+              ? 'rotate(-5deg) translate(calc(-16px + ' + ox + 'px), calc(20px + ' + oy + 'px)) translateZ(-60px)'
+              : 'rotate(3.5deg) translate(calc(12px + ' + ox + 'px), calc(-12px + ' + oy + 'px)) translateZ(-30px)';
+          });
+        });
+
+        scene.addEventListener('mouseleave', function () {
+          card.style.transform = 'rotateX(0deg) rotateY(0deg)';
+          panes.forEach(function (pane) {
+            pane.style.transform = pane.classList.contains('leaf-pane-2')
+              ? 'rotate(-5deg) translate(-16px, 20px) translateZ(-60px)'
+              : 'rotate(3.5deg) translate(12px, -12px) translateZ(-30px)';
+          });
+        });
+      }
+
+      // ── Password visibility toggles ────────────────────────────────
+      window.signupTogglePassword = function (fieldId, btn) {
+        var input = document.getElementById(fieldId);
+        var isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+        btn.style.opacity = isHidden ? '0.75' : '1';
+      };
+
+      // ── Validation (same rules as before, wired to the new shells) ──
+      var form = document.getElementById('signupForm');
+      var firstName = document.getElementById('firstName');
+      var lastName = document.getElementById('lastName');
+      var email = document.getElementById('email');
+      var phone = document.getElementById('phone');
+      var password = document.getElementById('password');
+      var confirmPassword = document.getElementById('confirmPassword');
+      var strengthFill = document.getElementById('strengthFill');
+      var strengthText = document.getElementById('strengthText');
+
+      function setFieldState(input, shell, msgEl, valid, message) {
+        shell.classList.toggle('is-invalid', !valid && !!message);
+        shell.classList.toggle('is-valid', valid);
+        if (msgEl) {
+          msgEl.textContent = message || '';
+          msgEl.className = 'field-msg' + (valid ? ' success' : message ? ' error' : '');
+        }
+      }
+
+      function validateName(input, shell, msgEl, label) {
+        var value = input.value.trim();
+        if (!value) { setFieldState(input, shell, msgEl, false, ''); return false; }
+        if (value.length < 2) { setFieldState(input, shell, msgEl, false, label + ' is too short'); return false; }
+        setFieldState(input, shell, msgEl, true, '');
+        return true;
+      }
+
+      function validateEmail() {
+        var value = email.value.trim();
+        var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        setFieldState(email, document.getElementById('emailShell'), document.getElementById('emailMsg'), ok, value && !ok ? 'Enter a valid email address' : '');
+        return ok;
+      }
+
+      function validatePhone() {
+        var value = phone.value.trim();
+        var shell = document.getElementById('phoneShell');
+        var msgEl = document.getElementById('phoneMsg');
+        if (!value) { setFieldState(phone, shell, msgEl, false, ''); return true; }
+        var ok = /^[+\d][\d\s-]{7,}$/.test(value);
+        setFieldState(phone, shell, msgEl, ok, ok ? '' : 'Enter a valid phone number');
+        return ok;
+      }
+
+      function scorePassword(value) {
+        var score = 0;
+        if (value.length >= 8) score++;
+        if (value.length >= 12) score++;
+        if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
+        if (/\d/.test(value)) score++;
+        if (/[^A-Za-z0-9]/.test(value)) score++;
+        return score;
+      }
+
+      function updateStrength() {
+        var value = password.value;
+        var score = scorePassword(value);
+        var levels = [
+          { pct: 0, label: '', color: 'var(--danger)' },
+          { pct: 20, label: 'Weak', color: '#e58a7a' },
+          { pct: 40, label: 'Fair', color: '#e0a15a' },
+          { pct: 60, label: 'Good', color: '#d9c05a' },
+          { pct: 80, label: 'Strong', color: '#a3c76e' },
+          { pct: 100, label: 'Excellent', color: 'var(--success)' }
+        ];
+        var level = levels[value ? score + 1 : 0] || levels[levels.length - 1];
+        strengthFill.style.width = level.pct + '%';
+        strengthFill.style.background = level.color;
+        strengthText.textContent = level.label || '\u00A0';
+        return value.length >= 8;
+      }
+
+      function validateConfirm() {
+        var shell = document.getElementById('confirmPasswordShell');
+        var msgEl = document.getElementById('confirmMsg');
+        if (!confirmPassword.value) { setFieldState(confirmPassword, shell, msgEl, false, ''); return false; }
+        var ok = confirmPassword.value === password.value;
+        setFieldState(confirmPassword, shell, msgEl, ok, ok ? '' : 'Passwords do not match');
+        return ok;
+      }
+
+      firstName.addEventListener('input', function () { validateName(firstName, document.getElementById('firstNameShell'), document.getElementById('firstNameMsg'), 'First name'); });
+      lastName.addEventListener('input', function () { validateName(lastName, document.getElementById('lastNameShell'), document.getElementById('lastNameMsg'), 'Last name'); });
+      email.addEventListener('input', validateEmail);
+      phone.addEventListener('input', validatePhone);
+      password.addEventListener('input', function () { updateStrength(); if (confirmPassword.value) validateConfirm(); });
+      confirmPassword.addEventListener('input', validateConfirm);
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var validations = [
+          validateName(firstName, document.getElementById('firstNameShell'), document.getElementById('firstNameMsg'), 'First name'),
+          validateName(lastName, document.getElementById('lastNameShell'), document.getElementById('lastNameMsg'), 'Last name'),
+          validateEmail(),
+          validatePhone(),
+          updateStrength(),
+          validateConfirm(),
+          document.getElementById('terms').checked
+        ];
+
+        if (validations.indexOf(false) === -1) {
+          var btn = document.getElementById('submitBtn');
+          var originalText = btn.textContent;
+          btn.textContent = 'Creating account...';
+          btn.disabled = true;
+
+          try {
+            var formData = new FormData(form);
+            var data = {};
+            formData.forEach(function (value, key) { data[key] = value; });
+
+            var response = await fetch('/signup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+
+            var resData = await response.json();
+
+            if (response.ok && resData.success) {
+              document.getElementById('signupModalBackdrop').classList.add('active');
+              document.getElementById('signupModal').classList.add('active');
+            } else {
+              alert(resData.message || 'Signup failed. Please try again.');
+            }
+          } catch (err) {
+            alert('An error occurred. Please try again.');
+          } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+          }
+        }
+      });
+    })();
+  </script>
+
+</body>
+
+</html>

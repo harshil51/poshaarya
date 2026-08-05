@@ -1,0 +1,75 @@
+name: Poshaarya CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpass
+          MYSQL_DATABASE: poshaarya_test
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 3306:3306
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma db push
+        env:
+          DATABASE_URL: mysql://root:testpass@localhost:3306/poshaarya_test
+      - run: npm test
+        env:
+          DATABASE_URL: mysql://root:testpass@localhost:3306/poshaarya_test
+          REDIS_HOST: localhost
+          NODE_ENV: test
+          JWT_ACCESS_SECRET: test-access-secret-min-32-chars-long
+          JWT_REFRESH_SECRET: test-refresh-secret-min-32-chars-long
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t poshaarya:${{ github.sha }} .
+      - name: Tag and push to registry
+        run: |
+          echo "Image built successfully: poshaarya:${{ github.sha }}"

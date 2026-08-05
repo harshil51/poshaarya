@@ -1,0 +1,69 @@
+```mermaid
+erDiagram
+    %% CORE TENANCY & RBAC
+    organizations ||--o{ departments : "has"
+    organizations ||--o{ users : "has"
+    departments ||--o{ teams : "has"
+    users ||--o{ team_members : "belongs_to"
+    teams ||--o{ team_members : "contains"
+    
+    roles ||--o{ role_permissions : "grants"
+    permissions ||--o{ role_permissions : "assigned_to"
+    users ||--o{ user_roles : "assigned"
+    roles ||--o{ user_roles : "assigned_to"
+
+    %% USER & PROFILES
+    users ||--|| profiles : "has_one"
+    users ||--|| health_profiles : "has_one"
+    users ||--|| fitness_profiles : "has_one"
+    users ||--|| privacy_settings : "has_one"
+    
+    users ||--o{ family_groups : "owns"
+    family_groups ||--o{ family_members : "contains"
+    users ||--o{ family_members : "is_member_of"
+
+    %% AUTHENTICATION
+    users ||--o{ auth_sessions : "has"
+    users ||--o{ login_history : "generates"
+
+    %% FOOD & NUTRITION
+    users ||--o{ foods : "creates (custom)"
+    organizations ||--o{ foods : "owns (branded)"
+    foods ||--o{ food_versions : "has"
+    food_versions ||--|| nutritional_info : "contains"
+    foods ||--o{ food_synonyms : "has"
+
+    %% MEALS
+    users ||--o{ meals : "logs"
+    meals ||--o{ meal_items : "contains"
+    meal_items }o--|| foods : "references"
+    meal_items }o--|| recipes : "references"
+
+    %% RECIPES
+    users ||--o{ recipes : "creates"
+    recipes ||--o{ recipe_versions : "has"
+    recipe_versions ||--o{ recipe_ingredients : "contains"
+    recipe_ingredients }o--|| foods : "uses"
+
+    %% EXERCISE & WORKOUT
+    users ||--o{ exercises : "creates (custom)"
+    users ||--o{ exercise_logs : "logs"
+    exercise_logs }o--|| exercises : "references"
+    users ||--o{ workout_plans : "creates"
+    workout_plans ||--o{ workout_weeks : "has"
+    workout_weeks ||--o{ workout_days : "has"
+
+    %% PAYMENTS & SUBSCRIPTIONS
+    users ||--o{ subscriptions : "has"
+    subscriptions ||--o{ invoices : "generates"
+    invoices ||--o{ payments : "receives"
+    users ||--|| wallets : "owns"
+
+    %% BODY TRACKING
+    users ||--o{ weight_logs : "logs"
+    users ||--o{ body_measurements : "logs"
+    users ||--o{ progress_photos : "uploads"
+
+    %% MEDIA
+    users ||--o{ media : "uploads"
+```

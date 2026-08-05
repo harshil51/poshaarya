@@ -1,0 +1,414 @@
+POSHARYA/
+├── .env
+├── .env.example
+├── .github
+│   └── workflows
+│       └── ci.yml
+├── .gitignore
+├── database_design
+│   ├── docs
+│   │   ├── database_naming_conventions.md
+│   │   ├── er_diagram.mermaid
+│   │   ├── performance_partitioning_strategy.md
+│   │   ├── security_backup_archiving.md
+│   │   └── table_dependency_graph.md
+│   ├── prisma
+│   │   └── schema.prisma
+│   └── sql
+│       └── complete_database_schema.sql
+├── docker
+│   ├── mysql
+│   │   └── init
+│   └── nginx
+│       └── nginx.conf
+├── docker-compose.yml
+├── Dockerfile
+├── docs
+│   ├── DEPLOYMENT.md
+│   └── INSTALLATION.md
+├── package-lock.json
+├── package.json
+├── prisma
+│   ├── migrations
+│   ├── schema.prisma
+│   └── seeds
+├── project_structure.md
+├── public
+│   ├── assets
+│   │   ├── animations
+│   │   └── fonts
+│   ├── css
+│   │   ├── components
+│   │   ├── layouts
+│   │   │   └── dashboard.css
+│   │   ├── main.css
+│   │   ├── pages
+│   │   ├── themes
+│   │   └── utilities
+│   ├── images
+│   │   ├── avatars
+│   │   ├── foods
+│   │   ├── icons
+│   │   └── illustrations
+│   └── js
+│       ├── charts
+│       ├── components
+│       │   ├── animations.js
+│       │   ├── navbar.js
+│       │   └── sidebar.js
+│       ├── pages
+│       ├── services
+│       └── utils
+│           ├── helpers.js
+│           └── theme.js
+├── README.md
+├── scripts
+├── server.err
+├── server.log
+├── server_output.log
+├── src
+│   ├── app.js
+│   ├── cache
+│   ├── config
+│   │   ├── cloudinary.js
+│   │   ├── database.js
+│   │   ├── environment.js
+│   │   ├── index.js
+│   │   └── redis.js
+│   ├── constants
+│   │   └── index.js
+│   ├── controllers
+│   │   ├── achievement
+│   │   │   └── achievement.controller.js
+│   │   ├── admin
+│   │   ├── analytics
+│   │   ├── auth
+│   │   │   └── auth.controller.js
+│   │   ├── barcodes
+│   │   │   └── barcodes.controller.js
+│   │   ├── blog
+│   │   │   └── blog.controller.js
+│   │   ├── body-measurements
+│   │   │   └── body-measurements.controller.js
+│   │   ├── contact
+│   │   │   └── contact.controller.js
+│   │   ├── daily-calorie
+│   │   │   └── daily-calorie.controller.js
+│   │   ├── emergency-contacts
+│   │   │   └── emergency-contacts.controller.js
+│   │   ├── exercise
+│   │   │   └── exercise.controller.js
+│   │   ├── exercise-categories
+│   │   │   └── exercise-categories.controller.js
+│   │   ├── family
+│   │   │   └── family.controller.js
+│   │   ├── favorites
+│   │   │   └── favorites.controller.js
+│   │   ├── feedback
+│   │   │   └── feedback.controller.js
+│   │   ├── fitness-profile
+│   │   │   └── fitness-profile.controller.js
+│   │   ├── food
+│   │   │   └── food.controller.js
+│   │   ├── food-categories
+│   │   │   └── food-categories.controller.js
+│   │   ├── goal
+│   │   │   └── goal.controller.js
+│   │   ├── health-profile
+│   │   │   └── health-profile.controller.js
+│   │   ├── meal
+│   │   │   └── meal.controller.js
+│   │   ├── meal-plans
+│   │   │   └── meal-plans.controller.js
+│   │   ├── meal-templates
+│   │   │   └── meal-templates.controller.js
+│   │   ├── notification
+│   │   │   └── notification.controller.js
+│   │   ├── notification-settings
+│   │   │   └── notification-settings.controller.js
+│   │   ├── privacy-settings
+│   │   │   └── privacy-settings.controller.js
+│   │   ├── profile
+│   │   │   └── profile.controller.js
+│   │   ├── progress-photo
+│   │   │   └── progress-photo.controller.js
+│   │   ├── recipe
+│   │   │   └── recipe.controller.js
+│   │   ├── referrals
+│   │   │   └── referrals.controller.js
+│   │   ├── subscription
+│   │   │   └── subscription.controller.js
+│   │   ├── tags
+│   │   │   └── tags.controller.js
+│   │   ├── user
+│   │   ├── user-preferences
+│   │   │   └── user-preferences.controller.js
+│   │   ├── wallet
+│   │   │   └── wallet.controller.js
+│   │   ├── water
+│   │   │   └── water.controller.js
+│   │   ├── web
+│   │   │   ├── auth.controller.js
+│   │   │   └── dashboard.controller.js
+│   │   ├── weight
+│   │   │   └── weight.controller.js
+│   │   └── workout-plans
+│   │       └── workout-plans.controller.js
+│   ├── errors
+│   │   ├── AppError.js
+│   │   ├── ErrorCodes.js
+│   │   ├── HttpStatus.js
+│   │   └── index.js
+│   ├── helpers
+│   ├── logger
+│   │   ├── morgan.js
+│   │   └── winston.js
+│   ├── middlewares
+│   │   ├── authenticate.js
+│   │   ├── errorHandler.js
+│   │   ├── rateLimiter.js
+│   │   ├── security.js
+│   │   ├── upload.js
+│   │   ├── validate.js
+│   │   └── webAuth.js
+│   ├── repositories
+│   ├── routes
+│   │   ├── index.js
+│   │   └── v1
+│   │       ├── achievement.routes.js
+│   │       ├── auth.routes.js
+│   │       ├── barcodes.routes.js
+│   │       ├── blog.routes.js
+│   │       ├── body-measurements.routes.js
+│   │       ├── contact.routes.js
+│   │       ├── daily-calorie.routes.js
+│   │       ├── emergency-contacts.routes.js
+│   │       ├── exercise-categories.routes.js
+│   │       ├── exercise.routes.js
+│   │       ├── family.routes.js
+│   │       ├── favorites.routes.js
+│   │       ├── feedback.routes.js
+│   │       ├── fitness-profile.routes.js
+│   │       ├── food-categories.routes.js
+│   │       ├── food.routes.js
+│   │       ├── goal.routes.js
+│   │       ├── health-profile.routes.js
+│   │       ├── meal-plans.routes.js
+│   │       ├── meal-templates.routes.js
+│   │       ├── meal.routes.js
+│   │       ├── notification-settings.routes.js
+│   │       ├── notification.routes.js
+│   │       ├── privacy-settings.routes.js
+│   │       ├── profile.routes.js
+│   │       ├── progress-photo.routes.js
+│   │       ├── recipe.routes.js
+│   │       ├── referrals.routes.js
+│   │       ├── subscription.routes.js
+│   │       ├── tags.routes.js
+│   │       ├── user-preferences.routes.js
+│   │       ├── wallet.routes.js
+│   │       ├── water.routes.js
+│   │       ├── weight.routes.js
+│   │       └── workout-plans.routes.js
+│   ├── server.js
+│   ├── services
+│   │   ├── achievement
+│   │   │   └── achievement.service.js
+│   │   ├── admin
+│   │   ├── analytics
+│   │   ├── auth
+│   │   │   ├── auth.service.js
+│   │   │   ├── email.service.js
+│   │   │   ├── otp.service.js
+│   │   │   └── token.service.js
+│   │   ├── barcodes
+│   │   │   └── barcodes.service.js
+│   │   ├── blog
+│   │   │   └── blog.service.js
+│   │   ├── body-measurements
+│   │   │   └── body-measurements.service.js
+│   │   ├── contact
+│   │   │   └── contact.service.js
+│   │   ├── daily-calorie
+│   │   │   └── daily-calorie.service.js
+│   │   ├── emergency-contacts
+│   │   │   └── emergency-contacts.service.js
+│   │   ├── exercise
+│   │   │   └── exercise.service.js
+│   │   ├── exercise-categories
+│   │   │   └── exercise-categories.service.js
+│   │   ├── family
+│   │   │   └── family.service.js
+│   │   ├── favorites
+│   │   │   └── favorites.service.js
+│   │   ├── feedback
+│   │   │   └── feedback.service.js
+│   │   ├── fitness-profile
+│   │   │   └── fitness-profile.service.js
+│   │   ├── food
+│   │   │   └── food.service.js
+│   │   ├── food-categories
+│   │   │   └── food-categories.service.js
+│   │   ├── goal
+│   │   │   └── goal.service.js
+│   │   ├── health-profile
+│   │   │   └── health-profile.service.js
+│   │   ├── meal
+│   │   │   └── meal.service.js
+│   │   ├── meal-plans
+│   │   │   └── meal-plans.service.js
+│   │   ├── meal-templates
+│   │   │   └── meal-templates.service.js
+│   │   ├── media.service.js
+│   │   ├── notification
+│   │   │   └── notification.service.js
+│   │   ├── notification-settings
+│   │   │   └── notification-settings.service.js
+│   │   ├── privacy-settings
+│   │   │   └── privacy-settings.service.js
+│   │   ├── profile
+│   │   │   └── profile.service.js
+│   │   ├── progress-photo
+│   │   │   └── progress-photo.service.js
+│   │   ├── recipe
+│   │   │   └── recipe.service.js
+│   │   ├── referrals
+│   │   │   └── referrals.service.js
+│   │   ├── subscription
+│   │   │   └── subscription.service.js
+│   │   ├── tags
+│   │   │   └── tags.service.js
+│   │   ├── user
+│   │   ├── user-preferences
+│   │   │   └── user-preferences.service.js
+│   │   ├── wallet
+│   │   │   └── wallet.service.js
+│   │   ├── water
+│   │   │   └── water.service.js
+│   │   ├── weight
+│   │   │   └── weight.service.js
+│   │   └── workout-plans
+│   │       └── workout-plans.service.js
+│   ├── tasks
+│   ├── templates
+│   │   └── emails
+│   ├── types
+│   ├── utils
+│   │   ├── asyncHandler.js
+│   │   ├── helpers.js
+│   │   ├── index.js
+│   │   └── response.js
+│   ├── validators
+│   │   ├── achievement
+│   │   │   └── achievement.validator.js
+│   │   ├── auth
+│   │   │   └── auth.validator.js
+│   │   ├── barcodes
+│   │   │   └── barcodes.validator.js
+│   │   ├── blog
+│   │   │   └── blog.validator.js
+│   │   ├── body-measurements
+│   │   │   └── body-measurements.validator.js
+│   │   ├── contact
+│   │   │   └── contact.validator.js
+│   │   ├── daily-calorie
+│   │   │   └── daily-calorie.validator.js
+│   │   ├── emergency-contacts
+│   │   │   └── emergency-contacts.validator.js
+│   │   ├── exercise
+│   │   │   └── exercise.validator.js
+│   │   ├── exercise-categories
+│   │   │   └── exercise-categories.validator.js
+│   │   ├── family
+│   │   │   └── family.validator.js
+│   │   ├── favorites
+│   │   │   └── favorites.validator.js
+│   │   ├── feedback
+│   │   │   └── feedback.validator.js
+│   │   ├── fitness-profile
+│   │   │   └── fitness-profile.validator.js
+│   │   ├── food
+│   │   │   └── food.validator.js
+│   │   ├── food-categories
+│   │   │   └── food-categories.validator.js
+│   │   ├── goal
+│   │   │   └── goal.validator.js
+│   │   ├── health-profile
+│   │   │   └── health-profile.validator.js
+│   │   ├── meal
+│   │   │   └── meal.validator.js
+│   │   ├── meal-plans
+│   │   │   └── meal-plans.validator.js
+│   │   ├── meal-templates
+│   │   │   └── meal-templates.validator.js
+│   │   ├── notification
+│   │   │   └── notification.validator.js
+│   │   ├── notification-settings
+│   │   │   └── notification-settings.validator.js
+│   │   ├── privacy-settings
+│   │   │   └── privacy-settings.validator.js
+│   │   ├── profile
+│   │   │   └── profile.validator.js
+│   │   ├── progress-photo
+│   │   │   └── progress-photo.validator.js
+│   │   ├── recipe
+│   │   │   └── recipe.validator.js
+│   │   ├── referrals
+│   │   │   └── referrals.validator.js
+│   │   ├── subscription
+│   │   │   └── subscription.validator.js
+│   │   ├── tags
+│   │   │   └── tags.validator.js
+│   │   ├── user
+│   │   ├── user-preferences
+│   │   │   └── user-preferences.validator.js
+│   │   ├── wallet
+│   │   │   └── wallet.validator.js
+│   │   ├── water
+│   │   │   └── water.validator.js
+│   │   ├── weight
+│   │   │   └── weight.validator.js
+│   │   └── workout-plans
+│   │       └── workout-plans.validator.js
+│   └── web.js
+├── stderr.log
+├── stdout.log
+├── tests
+│   ├── e2e
+│   ├── fixtures
+│   ├── integration
+│   └── unit
+└── views
+    ├── components
+    ├── layouts
+    │   ├── admin.html
+    │   ├── dashboard.html
+    │   └── main.html
+    ├── pages
+    │   ├── admin
+    │   │   └── index.html
+    │   ├── auth
+    │   │   ├── login.html
+    │   │   └── signup.html
+    │   ├── dashboard
+    │   │   ├── analytics.html
+    │   │   ├── exercise.html
+    │   │   ├── food-search.html
+    │   │   ├── index.html
+    │   │   ├── notifications.html
+    │   │   ├── profile.html
+    │   │   ├── settings.html
+    │   │   ├── water.html
+    │   │   └── weight.html
+    │   ├── exercise
+    │   ├── food
+    │   ├── profile
+    │   └── static
+    │       ├── 404.html
+    │       ├── about.html
+    │       └── home.html
+    └── partials
+        ├── footer.html
+        ├── navbar.html
+        ├── sidebar.html
+        └── topbar.html

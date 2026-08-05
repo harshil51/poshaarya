@@ -1,0 +1,1407 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String               @id @default(cuid()) @db.Char(36)
+  firstName            String               @map("first_name") @db.VarChar(100)
+  lastName             String?              @map("last_name") @db.VarChar(100)
+  email                String               @unique(map: "email") @db.VarChar(255)
+  phoneCode            String?              @map("phone_code") @db.VarChar(10)
+  phoneNumber          String?              @unique(map: "phone_number") @map("phone_number") @db.VarChar(20)
+  passwordHash         String?              @map("password_hash") @db.VarChar(255)
+  authProvider         String?              @default("local") @map("auth_provider") @db.VarChar(50)
+  providerId           String?              @map("provider_id") @db.VarChar(255)
+  isEmailVerified      Boolean?             @default(false) @map("is_email_verified")
+  isPhoneVerified      Boolean?             @default(false) @map("is_phone_verified")
+  twoFactorEnabled     Boolean?             @default(false) @map("two_factor_enabled")
+  twoFactorSecret      String?              @map("two_factor_secret") @db.VarChar(255)
+  status               String?              @default("ACTIVE") @db.VarChar(50)
+  lastLoginAt          DateTime?            @map("last_login_at") @db.Timestamp(0)
+  createdAt            DateTime?            @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt            DateTime?            @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt            DateTime?            @map("deleted_at") @db.Timestamp(0)
+  aiPredictionLogs     AiPredictionLog[]
+  auditLogs            AuditLog[]
+  authOtps             AuthOtp[]
+  authRefreshTokens    AuthRefreshToken[]
+  authSessions         AuthSession[]
+  blogs                Blog[]
+  bodyMeasurements     BodyMeasurement[]
+  emergencyContacts    EmergencyContact[]
+  exerciseLogs         ExerciseLog[]
+  exercises            Exercise[]
+  familyGroups         FamilyGroup[]
+  familyMembers        FamilyMember[]
+  fitnessProfile       FitnessProfile?
+  foods                Food[]
+  healthProfile        HealthProfile?
+  invoices             Invoice[]
+  loginHistory         LoginHistory[]
+  mealPlans            MealPlan[]
+  mealTemplates        MealTemplate[]
+  meals                Meal[]
+  media                Media[]
+  notificationSettings NotificationSetting?
+  notifications        Notification[]
+  organizationRoles    OrganizationRole[]
+  privacySettings      PrivacySetting?
+  profile              Profile?
+  progressPhotos       ProgressPhoto[]
+  recentSearches       RecentSearch[]
+  recipes              Recipe[]
+  referralHistory      ReferralHistory?
+  referral             Referral?
+  subscriptions        Subscription[]
+  teamMembers          TeamMember[]
+  userFavoriteFoods    UserFavoriteFood[]
+  userPreferences      UserPreference?
+  userRoles            UserRole[]
+  wallet               Wallet?
+  weightLogs           WeightLog[]
+  workoutPlans         WorkoutPlan[]
+
+  @@index([email, status], map: "idx_users_email_status")
+  @@map("users")
+}
+
+model Profile {
+  id           String    @id @default(cuid()) @db.Char(36)
+  userId       String    @unique(map: "user_id") @map("user_id") @db.Char(36)
+  dateOfBirth  DateTime? @map("date_of_birth") @db.Date
+  gender       String?   @db.VarChar(50)
+  bio          String?   @db.Text
+  addressLine1 String?   @map("address_line1") @db.VarChar(255)
+  addressLine2 String?   @map("address_line2") @db.VarChar(255)
+  city         String?   @db.VarChar(100)
+  state        String?   @db.VarChar(100)
+  country      String?   @db.VarChar(100)
+  zipCode      String?   @map("zip_code") @db.VarChar(20)
+  languages    Json?
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_profiles_user")
+
+  @@map("profiles")
+}
+
+model FoodCategory {
+  id        String         @id @default(cuid()) @db.Char(36)
+  name      String         @db.VarChar(255)
+  slug      String         @unique(map: "slug") @db.VarChar(255)
+  parentId  String?        @map("parent_id") @db.Char(36)
+  iconUrl   String?        @map("icon_url") @db.VarChar(1000)
+  createdAt DateTime?      @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime?      @default(now()) @map("updated_at") @db.Timestamp(0)
+  parent    FoodCategory?  @relation("food_categoriesTofood_categories", fields: [parentId], references: [id], onUpdate: NoAction, map: "fk_food_cat_parent")
+  children  FoodCategory[] @relation("food_categoriesTofood_categories")
+  foods     Food[]
+
+  @@index([parentId], map: "fk_food_cat_parent")
+  @@map("food_categories")
+}
+
+model Food {
+  id                String             @id @default(cuid()) @db.Char(36)
+  organizationId    String?            @map("organization_id") @db.Char(36)
+  userId            String?            @map("user_id") @db.Char(36)
+  categoryId        String?            @map("category_id") @db.Char(36)
+  name              String             @db.VarChar(255)
+  brandName         String?            @map("brand_name") @db.VarChar(255)
+  foodType          String?            @default("GENERIC") @map("food_type") @db.VarChar(50)
+  isVerified        Boolean?           @default(false) @map("is_verified")
+  currentVersion    Int                @default(1) @map("current_version")
+  imageUrl          String?            @map("image_url") @db.VarChar(1000)
+  servingSize       Decimal            @map("serving_size") @db.Decimal(8, 2)
+  servingUnit       String             @map("serving_unit") @db.VarChar(50)
+  createdAt         DateTime?          @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt         DateTime?          @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt         DateTime?          @map("deleted_at") @db.Timestamp(0)
+  createdBy         String?            @map("created_by") @db.Char(36)
+  updatedBy         String?            @map("updated_by") @db.Char(36)
+  barcodes          Barcode[]
+  foodSynonyms      FoodSynonym[]
+  foodTranslations  FoodTranslation[]
+  foodVersions      FoodVersion[]
+  category          FoodCategory?      @relation(fields: [categoryId], references: [id], onUpdate: NoAction, map: "fk_foods_cat")
+  organization      Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_foods_org")
+  user              User?              @relation(fields: [userId], references: [id], onUpdate: NoAction, map: "fk_foods_user")
+  recentSearches    RecentSearch[]
+  userFavoriteFoods UserFavoriteFood[]
+
+  @@index([categoryId], map: "fk_foods_cat")
+  @@index([organizationId], map: "fk_foods_org")
+  @@index([userId], map: "fk_foods_user")
+  @@index([name, brandName], map: "ft_foods_name")
+  @@map("foods")
+}
+
+model Meal {
+  id            String     @id @default(cuid()) @db.Char(36)
+  userId        String     @map("user_id") @db.Char(36)
+  mealType      String     @map("meal_type") @db.VarChar(50)
+  mealDate      DateTime   @map("meal_date") @db.Date
+  notes         String?    @db.Text
+  imageUrl      String?    @map("image_url") @db.VarChar(1000)
+  totalCalories Decimal?   @default(0.00) @map("total_calories") @db.Decimal(8, 2)
+  totalProtein  Decimal?   @default(0.00) @map("total_protein") @db.Decimal(8, 2)
+  totalCarbs    Decimal?   @default(0.00) @map("total_carbs") @db.Decimal(8, 2)
+  totalFat      Decimal?   @default(0.00) @map("total_fat") @db.Decimal(8, 2)
+  createdAt     DateTime?  @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt     DateTime?  @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt     DateTime?  @map("deleted_at") @db.Timestamp(0)
+  mealItems     MealItem[]
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_meals_user")
+
+  @@index([userId, mealDate], map: "idx_meals_user_date")
+  @@map("meals")
+}
+
+model MealItem {
+  id              String         @id @default(cuid()) @db.Char(36)
+  mealId          String         @map("meal_id") @db.Char(36)
+  foodVersionId   String?        @map("food_version_id") @db.Char(36)
+  recipeVersionId String?        @map("recipe_version_id") @db.Char(36)
+  quantity        Decimal        @db.Decimal(8, 2)
+  unit            String         @db.VarChar(50)
+  calories        Decimal        @db.Decimal(8, 2)
+  protein         Decimal        @db.Decimal(8, 2)
+  carbs           Decimal        @db.Decimal(8, 2)
+  fat             Decimal        @db.Decimal(8, 2)
+  createdAt       DateTime?      @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime?      @default(now()) @map("updated_at") @db.Timestamp(0)
+  foodVersion     FoodVersion?   @relation(fields: [foodVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_mi_food_version")
+  meal            Meal           @relation(fields: [mealId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_mi_meal")
+  recipeVersion   RecipeVersion? @relation(fields: [recipeVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_mi_recipe_version")
+
+  @@index([foodVersionId], map: "fk_mi_food_version")
+  @@index([recipeVersionId], map: "fk_mi_recipe_version")
+  @@index([mealId], map: "idx_meal_items_meal_id")
+  @@map("meal_items")
+}
+
+model Exercise {
+  id                String            @id @default(cuid()) @db.Char(36)
+  organizationId    String?           @map("organization_id") @db.Char(36)
+  userId            String?           @map("user_id") @db.Char(36)
+  categoryId        String?           @map("category_id") @db.Char(36)
+  name              String            @db.VarChar(255)
+  description       String?           @db.Text
+  videoUrl          String?           @map("video_url") @db.VarChar(1000)
+  imageUrl          String?           @map("image_url") @db.VarChar(1000)
+  targetMuscleGroup String?           @map("target_muscle_group") @db.VarChar(100)
+  equipmentNeeded   String?           @map("equipment_needed") @db.VarChar(100)
+  trackingType      String?           @default("REPS_WEIGHT") @map("tracking_type") @db.VarChar(50)
+  isVerified        Boolean?          @default(false) @map("is_verified")
+  createdAt         DateTime?         @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt         DateTime?         @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt         DateTime?         @map("deleted_at") @db.Timestamp(0)
+  exerciseLogs      ExerciseLog[]
+  category          ExerciseCategory? @relation(fields: [categoryId], references: [id], onUpdate: NoAction, map: "fk_exercises_cat")
+  organization      Organization?     @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_exercises_org")
+  user              User?             @relation(fields: [userId], references: [id], onUpdate: NoAction, map: "fk_exercises_user")
+  workoutExercises  WorkoutExercise[]
+
+  @@index([categoryId], map: "fk_exercises_cat")
+  @@index([organizationId], map: "fk_exercises_org")
+  @@index([userId], map: "fk_exercises_user")
+  @@fulltext([name, description], map: "ft_exercises_name_desc")
+  @@map("exercises")
+}
+
+model ExerciseLog {
+  id              String    @id @default(cuid()) @db.Char(36)
+  userId          String    @map("user_id") @db.Char(36)
+  exerciseId      String    @map("exercise_id") @db.Char(36)
+  logDate         DateTime  @map("log_date") @db.Date
+  sets            Int?
+  reps            Int?
+  weightKg        Decimal?  @map("weight_kg") @db.Decimal(8, 2)
+  durationSeconds Int?      @map("duration_seconds")
+  distanceKm      Decimal?  @map("distance_km") @db.Decimal(8, 2)
+  caloriesBurned  Decimal?  @map("calories_burned") @db.Decimal(8, 2)
+  notes           String?   @db.Text
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  exercise        Exercise  @relation(fields: [exerciseId], references: [id], onUpdate: NoAction, map: "fk_el_exercise")
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_el_user")
+
+  @@index([exerciseId], map: "fk_el_exercise")
+  @@index([userId, logDate], map: "idx_exercise_logs_user_date")
+  @@map("exercise_logs")
+}
+
+model WeightLog {
+  id        String    @id @default(cuid()) @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  weightKg  Decimal   @map("weight_kg") @db.Decimal(5, 2)
+  logDate   DateTime  @map("log_date") @db.Date
+  source    String?   @default("MANUAL") @db.VarChar(50)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_wl_user")
+
+  @@unique([userId, logDate], map: "uq_wl_date")
+  @@index([userId, logDate], map: "idx_weight_logs_user_date")
+  @@map("weight_logs")
+}
+
+model ProgressPhoto {
+  id        String    @id @default(cuid()) @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  photoUrl  String    @map("photo_url") @db.VarChar(1000)
+  photoType String?   @default("FRONT") @map("photo_type") @db.VarChar(50)
+  logDate   DateTime  @map("log_date") @db.Date
+  weightKg  Decimal?  @map("weight_kg") @db.Decimal(5, 2)
+  notes     String?   @db.Text
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_pp_user")
+
+  @@index([userId], map: "fk_pp_user")
+  @@map("progress_photos")
+}
+
+model Notification {
+  id        String    @id @default(cuid()) @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  title     String    @db.VarChar(255)
+  message   String    @db.Text
+  type      String    @db.VarChar(50)
+  status    String?   @default("UNREAD") @db.VarChar(50)
+  actionUrl String?   @map("action_url") @db.VarChar(1000)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamp(0)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_notif_user")
+
+  @@index([userId], map: "fk_notif_user")
+  @@map("notifications")
+}
+
+model Subscription {
+  id                     String        @id @default(cuid()) @db.Char(36)
+  userId                 String        @map("user_id") @db.Char(36)
+  organizationId         String?       @map("organization_id") @db.Char(36)
+  planId                 String        @map("plan_id") @db.Char(36)
+  status                 String?       @default("ACTIVE") @db.VarChar(50)
+  startDate              DateTime      @default(now()) @map("start_date") @db.Timestamp(0)
+  endDate                DateTime?     @map("end_date") @db.Timestamp(0)
+  trialEndDate           DateTime?     @map("trial_end_date") @db.Timestamp(0)
+  stripeSubscriptionId   String?       @map("stripe_subscription_id") @db.VarChar(255)
+  razorpaySubscriptionId String?       @map("razorpay_subscription_id") @db.VarChar(255)
+  cancelAtPeriodEnd      Boolean?      @default(false) @map("cancel_at_period_end")
+  createdAt              DateTime?     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt              DateTime?     @default(now()) @map("updated_at") @db.Timestamp(0)
+  invoices               Invoice[]
+  organization           Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sub_org")
+  plan                   Plan          @relation(fields: [planId], references: [id], onUpdate: NoAction, map: "fk_sub_plan")
+  user                   User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sub_user")
+
+  @@index([organizationId], map: "fk_sub_org")
+  @@index([planId], map: "fk_sub_plan")
+  @@index([userId, status], map: "idx_subscriptions_user_status")
+  @@map("subscriptions")
+}
+
+model Payment {
+  id                    String    @id @default(cuid()) @db.Char(36)
+  invoiceId             String    @map("invoice_id") @db.Char(36)
+  amount                Decimal   @db.Decimal(10, 2)
+  currency              String?   @default("INR") @db.VarChar(10)
+  paymentMethod         String?   @map("payment_method") @db.VarChar(100)
+  status                String?   @default("SUCCESS") @db.VarChar(50)
+  stripePaymentIntentId String?   @map("stripe_payment_intent_id") @db.VarChar(255)
+  razorpayPaymentId     String?   @map("razorpay_payment_id") @db.VarChar(255)
+  errorMessage          String?   @map("error_message") @db.Text
+  paidAt                DateTime? @default(now()) @map("paid_at") @db.Timestamp(0)
+  createdAt             DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt             DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  invoice               Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_payment_invoice")
+  refunds               Refund[]
+
+  @@index([invoiceId], map: "fk_payment_invoice")
+  @@map("payments")
+}
+
+model Blog {
+  id               String            @id @default(cuid()) @db.Char(36)
+  organizationId   String?           @map("organization_id") @db.Char(36)
+  authorId         String?           @map("author_id") @db.Char(36)
+  title            String            @db.VarChar(500)
+  slug             String            @unique(map: "slug") @db.VarChar(500)
+  content          String            @db.Text
+  featuredImageUrl String?           @map("featured_image_url") @db.VarChar(1000)
+  status           String?           @default("DRAFT") @db.VarChar(50)
+  publishedAt      DateTime?         @map("published_at") @db.Timestamp(0)
+  createdAt        DateTime?         @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt        DateTime?         @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt        DateTime?         @map("deleted_at") @db.Timestamp(0)
+  blogTags         BlogTag[]
+  blogTranslations BlogTranslation[]
+  author           User?             @relation(fields: [authorId], references: [id], onUpdate: NoAction, map: "fk_blogs_author")
+  organization     Organization?     @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_blogs_org")
+
+  @@index([authorId], map: "fk_blogs_author")
+  @@index([organizationId], map: "fk_blogs_org")
+  @@fulltext([title, content], map: "ft_blogs_content")
+  @@map("blogs")
+}
+
+model Recipe {
+  id                 String              @id @default(cuid()) @db.Char(36)
+  organizationId     String?             @map("organization_id") @db.Char(36)
+  userId             String?             @map("user_id") @db.Char(36)
+  name               String              @db.VarChar(255)
+  description        String?             @db.Text
+  imageUrl           String?             @map("image_url") @db.VarChar(1000)
+  prepTimeMinutes    Int?                @map("prep_time_minutes")
+  cookTimeMinutes    Int?                @map("cook_time_minutes")
+  servings           Decimal             @default(1.00) @db.Decimal(8, 2)
+  isVerified         Boolean?            @default(false) @map("is_verified")
+  currentVersion     Int                 @default(1) @map("current_version")
+  createdAt          DateTime?           @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt          DateTime?           @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt          DateTime?           @map("deleted_at") @db.Timestamp(0)
+  createdBy          String?             @map("created_by") @db.Char(36)
+  updatedBy          String?             @map("updated_by") @db.Char(36)
+  recipeTranslations RecipeTranslation[]
+  recipeVersions     RecipeVersion[]
+  organization       Organization?       @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_recipes_org")
+  user               User?               @relation(fields: [userId], references: [id], onUpdate: NoAction, map: "fk_recipes_user")
+
+  @@index([organizationId], map: "fk_recipes_org")
+  @@index([userId], map: "fk_recipes_user")
+  @@fulltext([name, description], map: "ft_recipes_name_desc")
+  @@map("recipes")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model AiPredictionLog {
+  id              String    @id @db.Char(36)
+  userId          String    @map("user_id") @db.Char(36)
+  modelName       String    @map("model_name") @db.VarChar(100)
+  predictionType  String    @map("prediction_type") @db.VarChar(100)
+  inputPrompt     String?   @map("input_prompt") @db.Text
+  outputResponse  String    @map("output_response") @db.Text
+  inferenceTimeMs Int?      @map("inference_time_ms")
+  tokensUsed      Int?      @map("tokens_used")
+  userFeedback    String?   @map("user_feedback") @db.VarChar(50)
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ai_user")
+
+  @@index([userId, predictionType], map: "idx_ai_prediction_user_type")
+  @@map("ai_prediction_logs")
+}
+
+model ApiKey {
+  id             String       @id @db.Char(36)
+  organizationId String       @map("organization_id") @db.Char(36)
+  name           String       @db.VarChar(255)
+  apiKeyHash     String       @unique(map: "api_key_hash") @map("api_key_hash") @db.VarChar(255)
+  scopes         Json?
+  expiresAt      DateTime?    @map("expires_at") @db.Timestamp(0)
+  isActive       Boolean?     @default(true) @map("is_active")
+  lastUsedAt     DateTime?    @map("last_used_at") @db.Timestamp(0)
+  createdAt      DateTime?    @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt      DateTime?    @default(now()) @map("updated_at") @db.Timestamp(0)
+  createdBy      String?      @map("created_by") @db.Char(36)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_api_keys_org")
+
+  @@index([organizationId], map: "fk_api_keys_org")
+  @@index([apiKeyHash], map: "idx_api_keys_lookup")
+  @@map("api_keys")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model AuditLog {
+  id             String        @id @db.Char(36)
+  organizationId String?       @map("organization_id") @db.Char(36)
+  actorId        String?       @map("actor_id") @db.Char(36)
+  entityType     String        @map("entity_type") @db.VarChar(100)
+  entityId       String        @map("entity_id") @db.Char(36)
+  action         String        @db.VarChar(100)
+  oldValues      Json?         @map("old_values")
+  newValues      Json?         @map("new_values")
+  ipAddress      String?       @map("ip_address") @db.VarChar(45)
+  userAgent      String?       @map("user_agent") @db.Text
+  createdAt      DateTime?     @default(now()) @map("created_at") @db.Timestamp(0)
+  actor          User?         @relation(fields: [actorId], references: [id], onUpdate: NoAction, map: "fk_audit_actor")
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_audit_org")
+
+  @@index([actorId], map: "fk_audit_actor")
+  @@index([organizationId], map: "fk_audit_org")
+  @@index([entityType, entityId], map: "idx_audit_logs_entity")
+  @@map("audit_logs")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model AuthOtp {
+  id         String    @id @db.Char(36)
+  userId     String?   @map("user_id") @db.Char(36)
+  identifier String    @db.VarChar(255)
+  otpHash    String    @map("otp_hash") @db.VarChar(255)
+  purpose    String    @db.VarChar(100)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamp(0)
+  isUsed     Boolean?  @default(false) @map("is_used")
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_otps_user")
+
+  @@index([userId], map: "fk_otps_user")
+  @@map("auth_otps")
+}
+
+model AuthRefreshToken {
+  id        String    @id @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  token     String    @unique(map: "token") @db.VarChar(500)
+  isRevoked Boolean?  @default(false) @map("is_revoked")
+  expiresAt DateTime  @map("expires_at") @db.Timestamp(0)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_refresh_tokens_user")
+
+  @@index([userId], map: "fk_refresh_tokens_user")
+  @@index([token], map: "idx_refresh_tokens_lookup")
+  @@map("auth_refresh_tokens")
+}
+
+model AuthSession {
+  id           String    @id @db.Char(36)
+  userId       String    @map("user_id") @db.Char(36)
+  sessionToken String    @unique(map: "session_token") @map("session_token") @db.VarChar(500)
+  deviceName   String?   @map("device_name") @db.VarChar(255)
+  deviceType   String?   @map("device_type") @db.VarChar(100)
+  osName       String?   @map("os_name") @db.VarChar(100)
+  browser      String?   @db.VarChar(100)
+  ipAddress    String?   @map("ip_address") @db.VarChar(45)
+  expiresAt    DateTime  @map("expires_at") @db.Timestamp(0)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sessions_user")
+
+  @@index([userId], map: "fk_sessions_user")
+  @@index([sessionToken], map: "idx_sessions_token")
+  @@map("auth_sessions")
+}
+
+model Barcode {
+  id        String    @id @db.Char(36)
+  foodId    String    @map("food_id") @db.Char(36)
+  barcode   String    @unique(map: "barcode") @db.VarChar(255)
+  format    String?   @default("EAN-13") @db.VarChar(50)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  food      Food      @relation(fields: [foodId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_barcodes_food")
+
+  @@index([foodId], map: "fk_barcodes_food")
+  @@index([barcode], map: "idx_barcodes_lookup")
+  @@map("barcodes")
+}
+
+model BlogTag {
+  blogId String @map("blog_id") @db.Char(36)
+  tagId  String @map("tag_id") @db.Char(36)
+  blog   Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_bt_blog")
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_bt_tag")
+
+  @@id([blogId, tagId])
+  @@index([tagId], map: "fk_bt_tag")
+  @@map("blog_tags")
+}
+
+model BlogTranslation {
+  id           String    @id @db.Char(36)
+  blogId       String    @map("blog_id") @db.Char(36)
+  languageCode String    @map("language_code") @db.VarChar(10)
+  title        String    @db.VarChar(500)
+  content      String    @db.Text
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  blog         Blog      @relation(fields: [blogId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_blog_trans_blog")
+
+  @@unique([blogId, languageCode], map: "uq_blog_trans_lang")
+  @@map("blog_translations")
+}
+
+model BodyMeasurement {
+  id                String    @id @db.Char(36)
+  userId            String    @map("user_id") @db.Char(36)
+  logDate           DateTime  @map("log_date") @db.Date
+  chestCm           Decimal?  @map("chest_cm") @db.Decimal(5, 2)
+  waistCm           Decimal?  @map("waist_cm") @db.Decimal(5, 2)
+  hipsCm            Decimal?  @map("hips_cm") @db.Decimal(5, 2)
+  armsCm            Decimal?  @map("arms_cm") @db.Decimal(5, 2)
+  thighsCm          Decimal?  @map("thighs_cm") @db.Decimal(5, 2)
+  bodyFatPercentage Decimal?  @map("body_fat_percentage") @db.Decimal(5, 2)
+  createdAt         DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt         DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_bm_user")
+
+  @@index([userId], map: "fk_bm_user")
+  @@map("body_measurements")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Coupon {
+  id             String        @id @db.Char(36)
+  organizationId String?       @map("organization_id") @db.Char(36)
+  code           String        @unique(map: "code") @db.VarChar(50)
+  description    String?       @db.Text
+  discountType   String?       @default("PERCENTAGE") @map("discount_type") @db.VarChar(50)
+  discountValue  Decimal       @map("discount_value") @db.Decimal(10, 2)
+  maxUses        Int?          @map("max_uses")
+  usesCount      Int?          @default(0) @map("uses_count")
+  validFrom      DateTime?     @map("valid_from") @db.Timestamp(0)
+  validUntil     DateTime?     @map("valid_until") @db.Timestamp(0)
+  isActive       Boolean?      @default(true) @map("is_active")
+  createdAt      DateTime?     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt      DateTime?     @default(now()) @map("updated_at") @db.Timestamp(0)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_coupons_org")
+
+  @@index([organizationId], map: "fk_coupons_org")
+  @@map("coupons")
+}
+
+model Department {
+  id             String       @id @db.Char(36)
+  organizationId String       @map("organization_id") @db.Char(36)
+  name           String       @db.VarChar(255)
+  description    String?      @db.Text
+  createdAt      DateTime?    @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt      DateTime?    @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt      DateTime?    @map("deleted_at") @db.Timestamp(0)
+  createdBy      String?      @map("created_by") @db.Char(36)
+  updatedBy      String?      @map("updated_by") @db.Char(36)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_departments_organization")
+  teams          Team[]
+
+  @@index([organizationId], map: "fk_departments_organization")
+  @@map("departments")
+}
+
+model EmergencyContact {
+  id           String    @id @db.Char(36)
+  userId       String    @map("user_id") @db.Char(36)
+  name         String    @db.VarChar(255)
+  relationship String?   @db.VarChar(100)
+  phoneCode    String?   @map("phone_code") @db.VarChar(10)
+  phoneNumber  String    @map("phone_number") @db.VarChar(20)
+  email        String?   @db.VarChar(255)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_emergency_user")
+
+  @@index([userId], map: "fk_emergency_user")
+  @@map("emergency_contacts")
+}
+
+model ExerciseCategory {
+  id          String     @id @db.Char(36)
+  name        String     @db.VarChar(255)
+  slug        String     @unique(map: "slug") @db.VarChar(255)
+  description String?    @db.Text
+  createdAt   DateTime?  @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime?  @default(now()) @map("updated_at") @db.Timestamp(0)
+  exercises   Exercise[]
+
+  @@map("exercise_categories")
+}
+
+model FamilyGroup {
+  id             String         @id @db.Char(36)
+  billingOwnerId String         @map("billing_owner_id") @db.Char(36)
+  name           String         @db.VarChar(255)
+  createdAt      DateTime?      @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt      DateTime?      @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt      DateTime?      @map("deleted_at") @db.Timestamp(0)
+  billingOwner   User           @relation(fields: [billingOwnerId], references: [id], onUpdate: NoAction, map: "fk_family_billing_owner")
+  familyMembers  FamilyMember[]
+
+  @@index([billingOwnerId], map: "fk_family_billing_owner")
+  @@map("family_groups")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model FamilyMember {
+  familyGroupId      String      @map("family_group_id") @db.Char(36)
+  userId             String      @map("user_id") @db.Char(36)
+  role               String?     @default("MEMBER") @db.VarChar(50)
+  hasParentalConsent Boolean?    @default(false) @map("has_parental_consent")
+  joinedAt           DateTime?   @default(now()) @map("joined_at") @db.Timestamp(0)
+  familyGroup        FamilyGroup @relation(fields: [familyGroupId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_fm_family")
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_fm_user")
+
+  @@id([familyGroupId, userId])
+  @@index([userId], map: "fk_fm_user")
+  @@map("family_members")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model FeatureFlag {
+  id             String        @id @db.Char(36)
+  organizationId String?       @map("organization_id") @db.Char(36)
+  flagKey        String        @map("flag_key") @db.VarChar(255)
+  isEnabled      Boolean?      @default(false) @map("is_enabled")
+  createdAt      DateTime?     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt      DateTime?     @default(now()) @map("updated_at") @db.Timestamp(0)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ff_org")
+
+  @@unique([organizationId, flagKey], map: "uq_ff_org_key")
+  @@map("feature_flags")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model FitnessProfile {
+  id              String    @id @db.Char(36)
+  userId          String    @unique(map: "user_id") @map("user_id") @db.Char(36)
+  currentHeightCm Decimal?  @map("current_height_cm") @db.Decimal(5, 2)
+  currentWeightKg Decimal?  @map("current_weight_kg") @db.Decimal(5, 2)
+  targetWeightKg  Decimal?  @map("target_weight_kg") @db.Decimal(5, 2)
+  activityLevel   String?   @map("activity_level") @db.VarChar(50)
+  fitnessGoals    Json?     @map("fitness_goals")
+  bmr             Decimal?  @db.Decimal(8, 2)
+  tdee            Decimal?  @db.Decimal(8, 2)
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_fitness_profiles_user")
+
+  @@map("fitness_profiles")
+}
+
+model FoodSynonym {
+  id           String    @id @db.Char(36)
+  foodId       String    @map("food_id") @db.Char(36)
+  synonym      String    @db.VarChar(255)
+  languageCode String?   @default("en") @map("language_code") @db.VarChar(10)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  food         Food      @relation(fields: [foodId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_food_synonyms_food")
+
+  @@index([foodId], map: "fk_food_synonyms_food")
+  @@index([synonym], map: "ft_food_synonyms_name")
+  @@map("food_synonyms")
+}
+
+model FoodTranslation {
+  id           String    @id @db.Char(36)
+  foodId       String    @map("food_id") @db.Char(36)
+  languageCode String    @map("language_code") @db.VarChar(10)
+  name         String    @db.VarChar(255)
+  description  String?   @db.Text
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  food         Food      @relation(fields: [foodId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_food_translations_food")
+
+  @@unique([foodId, languageCode], map: "uq_food_translation_lang")
+  @@map("food_translations")
+}
+
+model FoodVersion {
+  id                String             @id @db.Char(36)
+  foodId            String             @map("food_id") @db.Char(36)
+  version           Int
+  name              String             @db.VarChar(255)
+  brandName         String?            @map("brand_name") @db.VarChar(255)
+  servingSize       Decimal            @map("serving_size") @db.Decimal(8, 2)
+  servingUnit       String             @map("serving_unit") @db.VarChar(50)
+  changeReason      String?            @map("change_reason") @db.Text
+  createdAt         DateTime?          @default(now()) @map("created_at") @db.Timestamp(0)
+  createdBy         String?            @map("created_by") @db.Char(36)
+  food              Food               @relation(fields: [foodId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_food_versions_food")
+  mealItems         MealItem[]
+  mealPlanItems     MealPlanItem[]
+  nutritionalInfo   NutritionalInfo?
+  recipeIngredients RecipeIngredient[]
+
+  @@unique([foodId, version], map: "uq_food_version")
+  @@index([foodId, version], map: "idx_food_versions_food")
+  @@map("food_versions")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model HealthProfile {
+  id                 String    @id @db.Char(36)
+  userId             String    @unique(map: "user_id") @map("user_id") @db.Char(36)
+  medicalConditions  Json?     @map("medical_conditions")
+  allergies          Json?
+  medications        Json?
+  bloodGroup         String?   @map("blood_group") @db.VarChar(10)
+  dietaryPreferences Json?     @map("dietary_preferences")
+  createdAt          DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt          DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_health_profiles_user")
+
+  @@map("health_profiles")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Invoice {
+  id                String        @id @db.Char(36)
+  userId            String        @map("user_id") @db.Char(36)
+  subscriptionId    String?       @map("subscription_id") @db.Char(36)
+  invoiceNumber     String        @unique(map: "invoice_number") @map("invoice_number") @db.VarChar(100)
+  amountSubtotal    Decimal       @map("amount_subtotal") @db.Decimal(10, 2)
+  amountDiscount    Decimal?      @default(0.00) @map("amount_discount") @db.Decimal(10, 2)
+  amountTax         Decimal?      @default(0.00) @map("amount_tax") @db.Decimal(10, 2)
+  amountTotal       Decimal       @map("amount_total") @db.Decimal(10, 2)
+  currency          String?       @default("INR") @db.VarChar(10)
+  status            String?       @default("DRAFT") @db.VarChar(50)
+  invoicePdfUrl     String?       @map("invoice_pdf_url") @db.VarChar(1000)
+  stripeInvoiceId   String?       @map("stripe_invoice_id") @db.VarChar(255)
+  razorpayInvoiceId String?       @map("razorpay_invoice_id") @db.VarChar(255)
+  createdAt         DateTime?     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt         DateTime?     @default(now()) @map("updated_at") @db.Timestamp(0)
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id], onUpdate: NoAction, map: "fk_invoice_sub")
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_invoice_user")
+  payments          Payment[]
+
+  @@index([subscriptionId], map: "fk_invoice_sub")
+  @@index([userId, status], map: "idx_invoices_user_status")
+  @@map("invoices")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model LoginHistory {
+  id            String    @id @db.Char(36)
+  userId        String    @map("user_id") @db.Char(36)
+  loginAt       DateTime? @default(now()) @map("login_at") @db.Timestamp(0)
+  ipAddress     String?   @map("ip_address") @db.VarChar(45)
+  userAgent     String?   @map("user_agent") @db.Text
+  status        String    @db.VarChar(50)
+  failureReason String?   @map("failure_reason") @db.VarChar(255)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_lh_user")
+
+  @@index([userId, loginAt], map: "idx_login_history_user_date")
+  @@map("login_history")
+}
+
+model MealPlanDay {
+  id                String          @id @db.Char(36)
+  mealPlanVersionId String          @map("meal_plan_version_id") @db.Char(36)
+  dayNumber         Int             @map("day_number")
+  title             String?         @db.VarChar(255)
+  notes             String?         @db.Text
+  createdAt         DateTime?       @default(now()) @map("created_at") @db.Timestamp(0)
+  mealPlanVersion   MealPlanVersion @relation(fields: [mealPlanVersionId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_mpd_version")
+  mealPlanItems     MealPlanItem[]
+
+  @@unique([mealPlanVersionId, dayNumber], map: "uq_mpd_day")
+  @@map("meal_plan_days")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model MealPlanItem {
+  id              String         @id @db.Char(36)
+  mealPlanDayId   String         @map("meal_plan_day_id") @db.Char(36)
+  mealType        String         @map("meal_type") @db.VarChar(50)
+  foodVersionId   String?        @map("food_version_id") @db.Char(36)
+  recipeVersionId String?        @map("recipe_version_id") @db.Char(36)
+  quantity        Decimal        @db.Decimal(8, 2)
+  unit            String         @db.VarChar(50)
+  sortOrder       Int?           @default(0) @map("sort_order")
+  createdAt       DateTime?      @default(now()) @map("created_at") @db.Timestamp(0)
+  mealPlanDay     MealPlanDay    @relation(fields: [mealPlanDayId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_mpi_day")
+  foodVersion     FoodVersion?   @relation(fields: [foodVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_mpi_food_version")
+  recipeVersion   RecipeVersion? @relation(fields: [recipeVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_mpi_recipe_version")
+
+  @@index([mealPlanDayId], map: "fk_mpi_day")
+  @@index([foodVersionId], map: "fk_mpi_food_version")
+  @@index([recipeVersionId], map: "fk_mpi_recipe_version")
+  @@map("meal_plan_items")
+}
+
+model MealPlanVersion {
+  id           String        @id @db.Char(36)
+  mealPlanId   String        @map("meal_plan_id") @db.Char(36)
+  version      Int
+  changeReason String?       @map("change_reason") @db.Text
+  createdAt    DateTime?     @default(now()) @map("created_at") @db.Timestamp(0)
+  createdBy    String?       @map("created_by") @db.Char(36)
+  mealPlanDays MealPlanDay[]
+  mealPlan     MealPlan      @relation(fields: [mealPlanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_mpv_meal_plan")
+
+  @@unique([mealPlanId, version], map: "uq_mp_version")
+  @@map("meal_plan_versions")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model MealPlan {
+  id               String            @id @db.Char(36)
+  organizationId   String?           @map("organization_id") @db.Char(36)
+  userId           String?           @map("user_id") @db.Char(36)
+  name             String            @db.VarChar(255)
+  description      String?           @db.Text
+  durationDays     Int               @map("duration_days")
+  targetCalories   Decimal?          @map("target_calories") @db.Decimal(8, 2)
+  isPremium        Boolean?          @default(false) @map("is_premium")
+  currentVersion   Int               @default(1) @map("current_version")
+  createdAt        DateTime?         @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt        DateTime?         @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt        DateTime?         @map("deleted_at") @db.Timestamp(0)
+  mealPlanVersions MealPlanVersion[]
+  organization     Organization?     @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_mp_org")
+  user             User?             @relation(fields: [userId], references: [id], onUpdate: NoAction, map: "fk_mp_user")
+
+  @@index([organizationId], map: "fk_mp_org")
+  @@index([userId], map: "fk_mp_user")
+  @@map("meal_plans")
+}
+
+model MealTemplate {
+  id          String    @id @db.Char(36)
+  userId      String    @map("user_id") @db.Char(36)
+  name        String    @db.VarChar(255)
+  description String?   @db.Text
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_mt_user")
+
+  @@index([userId], map: "fk_mt_user")
+  @@map("meal_templates")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Media {
+  id            String    @id @db.Char(36)
+  userId        String    @map("user_id") @db.Char(36)
+  entityType    String    @map("entity_type") @db.VarChar(50)
+  entityId      String    @map("entity_id") @db.Char(36)
+  mediaUrl      String    @map("media_url") @db.VarChar(1000)
+  mediaType     String?   @default("IMAGE") @map("media_type") @db.VarChar(50)
+  fileSizeBytes BigInt?   @map("file_size_bytes")
+  provider      String?   @default("CLOUDINARY") @db.VarChar(50)
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_media_user")
+
+  @@index([userId], map: "fk_media_user")
+  @@map("media")
+}
+
+model NotificationSetting {
+  id              String    @id @db.Char(36)
+  userId          String    @unique(map: "user_id") @map("user_id") @db.Char(36)
+  emailPromotions Boolean?  @default(true) @map("email_promotions")
+  emailUpdates    Boolean?  @default(true) @map("email_updates")
+  pushMeals       Boolean?  @default(true) @map("push_meals")
+  pushWater       Boolean?  @default(true) @map("push_water")
+  pushWorkouts    Boolean?  @default(true) @map("push_workouts")
+  smsAlerts       Boolean?  @default(false) @map("sms_alerts")
+  whatsappAlerts  Boolean?  @default(false) @map("whatsapp_alerts")
+  quietHoursStart DateTime? @map("quiet_hours_start") @db.Time(0)
+  quietHoursEnd   DateTime? @map("quiet_hours_end") @db.Time(0)
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_notif_settings_user")
+
+  @@map("notification_settings")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model NotificationTemplate {
+  id           String    @id @db.Char(36)
+  name         String    @unique(map: "name") @db.VarChar(255)
+  subject      String?   @db.VarChar(500)
+  bodyTemplate String    @map("body_template") @db.Text
+  type         String    @db.VarChar(50)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+
+  @@map("notification_templates")
+}
+
+model NutritionalInfo {
+  id            String      @id @db.Char(36)
+  foodVersionId String      @unique(map: "food_version_id") @map("food_version_id") @db.Char(36)
+  calories      Decimal     @default(0.00) @db.Decimal(8, 2)
+  protein       Decimal     @default(0.00) @db.Decimal(8, 2)
+  carbs         Decimal     @default(0.00) @db.Decimal(8, 2)
+  fat           Decimal     @default(0.00) @db.Decimal(8, 2)
+  fiber         Decimal?    @db.Decimal(8, 2)
+  sugar         Decimal?    @db.Decimal(8, 2)
+  cholesterol   Decimal?    @db.Decimal(8, 2)
+  sodium        Decimal?    @db.Decimal(8, 2)
+  potassium     Decimal?    @db.Decimal(8, 2)
+  calcium       Decimal?    @db.Decimal(8, 2)
+  iron          Decimal?    @db.Decimal(8, 2)
+  magnesium     Decimal?    @db.Decimal(8, 2)
+  phosphorus    Decimal?    @db.Decimal(8, 2)
+  zinc          Decimal?    @db.Decimal(8, 2)
+  copper        Decimal?    @db.Decimal(8, 2)
+  manganese     Decimal?    @db.Decimal(8, 2)
+  selenium      Decimal?    @db.Decimal(8, 2)
+  vitaminA      Decimal?    @map("vitamin_a") @db.Decimal(8, 2)
+  vitaminB6     Decimal?    @map("vitamin_b6") @db.Decimal(8, 2)
+  vitaminB12    Decimal?    @map("vitamin_b12") @db.Decimal(8, 2)
+  vitaminC      Decimal?    @map("vitamin_c") @db.Decimal(8, 2)
+  vitaminD      Decimal?    @map("vitamin_d") @db.Decimal(8, 2)
+  vitaminE      Decimal?    @map("vitamin_e") @db.Decimal(8, 2)
+  vitaminK      Decimal?    @map("vitamin_k") @db.Decimal(8, 2)
+  thiamin       Decimal?    @db.Decimal(8, 2)
+  riboflavin    Decimal?    @db.Decimal(8, 2)
+  niacin        Decimal?    @db.Decimal(8, 2)
+  folate        Decimal?    @db.Decimal(8, 2)
+  createdAt     DateTime?   @default(now()) @map("created_at") @db.Timestamp(0)
+  foodVersion   FoodVersion @relation(fields: [foodVersionId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_nutritional_info_version")
+
+  @@index([foodVersionId], map: "idx_nutritional_info_version")
+  @@map("nutritional_info")
+}
+
+model OrganizationRole {
+  organizationId String       @map("organization_id") @db.Char(36)
+  userId         String       @map("user_id") @db.Char(36)
+  roleId         String       @map("role_id") @db.Char(36)
+  createdAt      DateTime?    @default(now()) @map("created_at") @db.Timestamp(0)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_or_org")
+  role           Role         @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_or_role")
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_or_user")
+
+  @@id([organizationId, userId, roleId])
+  @@index([roleId], map: "fk_or_role")
+  @@index([userId, organizationId, roleId], map: "idx_org_roles_user_org")
+  @@map("organization_roles")
+}
+
+model Organization {
+  id                String             @id @db.Char(36)
+  name              String             @db.VarChar(255)
+  slug              String             @unique(map: "slug") @db.VarChar(255)
+  domain            String?            @unique(map: "domain") @db.VarChar(255)
+  logoUrl           String?            @map("logo_url") @db.VarChar(1000)
+  brandingJson      Json?              @map("branding_json")
+  settingsJson      Json?              @map("settings_json")
+  isActive          Boolean?           @default(true) @map("is_active")
+  createdAt         DateTime?          @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt         DateTime?          @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt         DateTime?          @map("deleted_at") @db.Timestamp(0)
+  createdBy         String?            @map("created_by") @db.Char(36)
+  updatedBy         String?            @map("updated_by") @db.Char(36)
+  apiKeys           ApiKey[]
+  auditLogs         AuditLog[]
+  blogs             Blog[]
+  coupons           Coupon[]
+  departments       Department[]
+  exercises         Exercise[]
+  featureFlags      FeatureFlag[]
+  foods             Food[]
+  mealPlans         MealPlan[]
+  organizationRoles OrganizationRole[]
+  recipes           Recipe[]
+  roles             Role[]
+  subscriptions     Subscription[]
+  teams             Team[]
+  workoutPlans      WorkoutPlan[]
+
+  @@map("organizations")
+}
+
+model Permission {
+  id              String           @id @db.Char(36)
+  module          String           @db.VarChar(100)
+  action          String           @db.VarChar(100)
+  description     String?          @db.Text
+  createdAt       DateTime?        @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime?        @default(now()) @map("updated_at") @db.Timestamp(0)
+  rolePermissions RolePermission[]
+
+  @@unique([module, action], map: "uq_permissions_module_action")
+  @@map("permissions")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Plan {
+  id              String         @id @db.Char(36)
+  name            String         @db.VarChar(255)
+  description     String?        @db.Text
+  price           Decimal        @db.Decimal(10, 2)
+  currency        String?        @default("INR") @db.VarChar(10)
+  billingCycle    String?        @default("MONTHLY") @map("billing_cycle") @db.VarChar(50)
+  trialDays       Int?           @default(0) @map("trial_days")
+  features        Json?
+  stripeProductId String?        @map("stripe_product_id") @db.VarChar(255)
+  stripePriceId   String?        @map("stripe_price_id") @db.VarChar(255)
+  razorpayPlanId  String?        @map("razorpay_plan_id") @db.VarChar(255)
+  isActive        Boolean?       @default(true) @map("is_active")
+  createdAt       DateTime?      @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime?      @default(now()) @map("updated_at") @db.Timestamp(0)
+  subscriptions   Subscription[]
+
+  @@map("plans")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model PrivacySetting {
+  id                String    @id @db.Char(36)
+  userId            String    @unique(map: "user_id") @map("user_id") @db.Char(36)
+  profileVisibility String?   @default("PRIVATE") @map("profile_visibility") @db.VarChar(50)
+  showWeight        Boolean?  @default(false) @map("show_weight")
+  showMeals         Boolean?  @default(false) @map("show_meals")
+  showWorkouts      Boolean?  @default(false) @map("show_workouts")
+  allowSearch       Boolean?  @default(true) @map("allow_search")
+  shareDataWithAi   Boolean?  @default(true) @map("share_data_with_ai")
+  createdAt         DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt         DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_privacy_user")
+
+  @@map("privacy_settings")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model RecentSearch {
+  id          String    @id @db.Char(36)
+  userId      String    @map("user_id") @db.Char(36)
+  searchQuery String?   @map("search_query") @db.VarChar(255)
+  foodId      String?   @map("food_id") @db.Char(36)
+  searchedAt  DateTime? @default(now()) @map("searched_at") @db.Timestamp(0)
+  food        Food?     @relation(fields: [foodId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rs_food")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rs_user")
+
+  @@index([foodId], map: "fk_rs_food")
+  @@index([userId], map: "fk_rs_user")
+  @@map("recent_searches")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model RecipeIngredient {
+  id              String        @id @db.Char(36)
+  recipeVersionId String        @map("recipe_version_id") @db.Char(36)
+  foodVersionId   String        @map("food_version_id") @db.Char(36)
+  quantity        Decimal       @db.Decimal(8, 2)
+  unit            String        @db.VarChar(50)
+  notes           String?       @db.VarChar(255)
+  sortOrder       Int?          @default(0) @map("sort_order")
+  createdAt       DateTime?     @default(now()) @map("created_at") @db.Timestamp(0)
+  foodVersion     FoodVersion   @relation(fields: [foodVersionId], references: [id], onUpdate: NoAction, map: "fk_ri_food_version")
+  recipeVersion   RecipeVersion @relation(fields: [recipeVersionId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ri_recipe_version")
+
+  @@index([foodVersionId], map: "fk_ri_food_version")
+  @@index([recipeVersionId], map: "fk_ri_recipe_version")
+  @@map("recipe_ingredients")
+}
+
+model RecipeStep {
+  id              String        @id @db.Char(36)
+  recipeVersionId String        @map("recipe_version_id") @db.Char(36)
+  stepNumber      Int           @map("step_number")
+  instruction     String        @db.Text
+  imageUrl        String?       @map("image_url") @db.VarChar(1000)
+  timeMinutes     Int?          @map("time_minutes")
+  createdAt       DateTime?     @default(now()) @map("created_at") @db.Timestamp(0)
+  recipeVersion   RecipeVersion @relation(fields: [recipeVersionId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rs_recipe_version")
+
+  @@index([recipeVersionId], map: "fk_rs_recipe_version")
+  @@map("recipe_steps")
+}
+
+model RecipeTranslation {
+  id           String    @id @db.Char(36)
+  recipeId     String    @map("recipe_id") @db.Char(36)
+  languageCode String    @map("language_code") @db.VarChar(10)
+  name         String    @db.VarChar(255)
+  description  String?   @db.Text
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  recipe       Recipe    @relation(fields: [recipeId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_recipe_trans_recipe")
+
+  @@unique([recipeId, languageCode], map: "uq_recipe_trans_lang")
+  @@map("recipe_translations")
+}
+
+model RecipeVersion {
+  id                String             @id @db.Char(36)
+  recipeId          String             @map("recipe_id") @db.Char(36)
+  version           Int
+  name              String             @db.VarChar(255)
+  description       String?            @db.Text
+  prepTimeMinutes   Int?               @map("prep_time_minutes")
+  cookTimeMinutes   Int?               @map("cook_time_minutes")
+  servings          Decimal            @db.Decimal(8, 2)
+  changeReason      String?            @map("change_reason") @db.Text
+  createdAt         DateTime?          @default(now()) @map("created_at") @db.Timestamp(0)
+  createdBy         String?            @map("created_by") @db.Char(36)
+  mealItems         MealItem[]
+  mealPlanItems     MealPlanItem[]
+  recipeIngredients RecipeIngredient[]
+  recipeSteps       RecipeStep[]
+  recipe            Recipe             @relation(fields: [recipeId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_recipe_versions_recipe")
+
+  @@unique([recipeId, version], map: "uq_recipe_version")
+  @@map("recipe_versions")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ReferralHistory {
+  id              String    @id @db.Char(36)
+  referralId      String    @map("referral_id") @db.Char(36)
+  referredUserId  String    @unique(map: "uq_rh_referred") @map("referred_user_id") @db.Char(36)
+  rewardAmount    Decimal?  @map("reward_amount") @db.Decimal(10, 2)
+  freePremiumDays Int?      @map("free_premium_days")
+  status          String?   @default("PENDING") @db.VarChar(50)
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  referral        Referral  @relation(fields: [referralId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rh_referral")
+  user            User      @relation(fields: [referredUserId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rh_referred_user")
+
+  @@index([referralId], map: "fk_rh_referral")
+  @@map("referral_history")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Referral {
+  id                 String            @id @db.Char(36)
+  userId             String            @unique(map: "user_id") @map("user_id") @db.Char(36)
+  referralCode       String            @unique(map: "referral_code") @map("referral_code") @db.VarChar(50)
+  totalReferred      Int?              @default(0) @map("total_referred")
+  totalRewardsEarned Decimal?          @default(0.00) @map("total_rewards_earned") @db.Decimal(10, 2)
+  createdAt          DateTime?         @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt          DateTime?         @default(now()) @map("updated_at") @db.Timestamp(0)
+  referralHistory    ReferralHistory[]
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_referrals_user")
+
+  @@map("referrals")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Refund {
+  id               String    @id @db.Char(36)
+  paymentId        String    @map("payment_id") @db.Char(36)
+  amount           Decimal   @db.Decimal(10, 2)
+  reason           String?   @db.Text
+  status           String?   @default("PENDING") @db.VarChar(50)
+  stripeRefundId   String?   @map("stripe_refund_id") @db.VarChar(255)
+  razorpayRefundId String?   @map("razorpay_refund_id") @db.VarChar(255)
+  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt        DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  payment          Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_refund_payment")
+
+  @@index([paymentId], map: "fk_refund_payment")
+  @@map("refunds")
+}
+
+model RolePermission {
+  roleId       String     @map("role_id") @db.Char(36)
+  permissionId String     @map("permission_id") @db.Char(36)
+  createdAt    DateTime?  @default(now()) @map("created_at") @db.Timestamp(0)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rp_permission")
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rp_role")
+
+  @@id([roleId, permissionId])
+  @@index([permissionId], map: "fk_rp_permission")
+  @@map("role_permissions")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Role {
+  id                String             @id @db.Char(36)
+  organizationId    String?            @map("organization_id") @db.Char(36)
+  name              String             @db.VarChar(100)
+  slug              String             @db.VarChar(100)
+  description       String?            @db.Text
+  isSystem          Boolean?           @default(false) @map("is_system")
+  createdAt         DateTime?          @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt         DateTime?          @default(now()) @map("updated_at") @db.Timestamp(0)
+  organizationRoles OrganizationRole[]
+  rolePermissions   RolePermission[]
+  organization      Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_roles_organization")
+  userRoles         UserRole[]
+
+  @@unique([organizationId, slug], map: "uq_roles_org_slug")
+  @@map("roles")
+}
+
+model SystemSetting {
+  id           String    @id @db.Char(36)
+  settingKey   String    @unique(map: "setting_key") @map("setting_key") @db.VarChar(255)
+  settingValue Json      @map("setting_value")
+  description  String?   @db.Text
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  updatedBy    String?   @map("updated_by") @db.Char(36)
+
+  @@map("system_settings")
+}
+
+model Tag {
+  id        String    @id @db.Char(36)
+  name      String    @unique(map: "name") @db.VarChar(255)
+  slug      String    @unique(map: "slug") @db.VarChar(255)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  blogTags  BlogTag[]
+
+  @@map("tags")
+}
+
+model TeamMember {
+  teamId    String    @map("team_id") @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  isManager Boolean?  @default(false) @map("is_manager")
+  joinedAt  DateTime? @default(now()) @map("joined_at") @db.Timestamp(0)
+  team      Team      @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_tm_team")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_tm_user")
+
+  @@id([teamId, userId])
+  @@index([userId, teamId], map: "idx_team_members_user_team")
+  @@map("team_members")
+}
+
+model Team {
+  id             String       @id @db.Char(36)
+  organizationId String       @map("organization_id") @db.Char(36)
+  departmentId   String?      @map("department_id") @db.Char(36)
+  name           String       @db.VarChar(255)
+  description    String?      @db.Text
+  createdAt      DateTime?    @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt      DateTime?    @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt      DateTime?    @map("deleted_at") @db.Timestamp(0)
+  createdBy      String?      @map("created_by") @db.Char(36)
+  updatedBy      String?      @map("updated_by") @db.Char(36)
+  teamMembers    TeamMember[]
+  department     Department?  @relation(fields: [departmentId], references: [id], onUpdate: NoAction, map: "fk_teams_department")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_teams_organization")
+
+  @@index([departmentId], map: "fk_teams_department")
+  @@index([organizationId], map: "fk_teams_organization")
+  @@map("teams")
+}
+
+model UserFavoriteFood {
+  userId    String    @map("user_id") @db.Char(36)
+  foodId    String    @map("food_id") @db.Char(36)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  food      Food      @relation(fields: [foodId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_uff_food")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_uff_user")
+
+  @@id([userId, foodId])
+  @@index([foodId], map: "fk_uff_food")
+  @@map("user_favorite_foods")
+}
+
+model UserPreference {
+  id         String    @id @db.Char(36)
+  userId     String    @unique(map: "user_id") @map("user_id") @db.Char(36)
+  timezone   String?   @default("Asia/Kolkata") @db.VarChar(100)
+  dateFormat String?   @default("DD/MM/YYYY") @map("date_format") @db.VarChar(20)
+  timeFormat String?   @default("24h") @map("time_format") @db.VarChar(10)
+  weightUnit String?   @default("kg") @map("weight_unit") @db.VarChar(10)
+  heightUnit String?   @default("cm") @map("height_unit") @db.VarChar(10)
+  waterUnit  String?   @default("ml") @map("water_unit") @db.VarChar(10)
+  energyUnit String?   @default("kcal") @map("energy_unit") @db.VarChar(10)
+  theme      String?   @default("light") @db.VarChar(20)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user_prefs_user")
+
+  @@map("user_preferences")
+}
+
+model UserRole {
+  userId    String    @map("user_id") @db.Char(36)
+  roleId    String    @map("role_id") @db.Char(36)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  role      Role      @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ur_role")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ur_user")
+
+  @@id([userId, roleId])
+  @@index([roleId], map: "fk_ur_role")
+  @@map("user_roles")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model WalletTransaction {
+  id              String    @id @db.Char(36)
+  walletId        String    @map("wallet_id") @db.Char(36)
+  amount          Decimal   @db.Decimal(10, 2)
+  transactionType String    @map("transaction_type") @db.VarChar(50)
+  description     String?   @db.Text
+  referenceId     String?   @map("reference_id") @db.Char(36)
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  wallet          Wallet    @relation(fields: [walletId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_wt_wallet")
+
+  @@index([walletId], map: "fk_wt_wallet")
+  @@map("wallet_transactions")
+}
+
+model Wallet {
+  id                 String              @id @db.Char(36)
+  userId             String              @unique(map: "user_id") @map("user_id") @db.Char(36)
+  balance            Decimal?            @default(0.00) @db.Decimal(10, 2)
+  currency           String?             @default("INR") @db.VarChar(10)
+  createdAt          DateTime?           @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt          DateTime?           @default(now()) @map("updated_at") @db.Timestamp(0)
+  walletTransactions WalletTransaction[]
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_wallet_user")
+
+  @@map("wallets")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model WorkoutDay {
+  id               String            @id @db.Char(36)
+  workoutWeekId    String            @map("workout_week_id") @db.Char(36)
+  dayNumber        Int               @map("day_number")
+  isRestDay        Boolean?          @default(false) @map("is_rest_day")
+  title            String?           @db.VarChar(255)
+  notes            String?           @db.Text
+  createdAt        DateTime?         @default(now()) @map("created_at") @db.Timestamp(0)
+  workoutWeek      WorkoutWeek       @relation(fields: [workoutWeekId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_wd_week")
+  workoutExercises WorkoutExercise[]
+
+  @@unique([workoutWeekId, dayNumber], map: "uq_wd_day")
+  @@map("workout_days")
+}
+
+model WorkoutExercise {
+  id              String     @id @db.Char(36)
+  workoutDayId    String     @map("workout_day_id") @db.Char(36)
+  exerciseId      String     @map("exercise_id") @db.Char(36)
+  sets            Int?
+  reps            Int?
+  durationSeconds Int?       @map("duration_seconds")
+  restSeconds     Int?       @map("rest_seconds")
+  notes           String?    @db.Text
+  sortOrder       Int?       @default(0) @map("sort_order")
+  createdAt       DateTime?  @default(now()) @map("created_at") @db.Timestamp(0)
+  workoutDay      WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_we_day")
+  exercise        Exercise   @relation(fields: [exerciseId], references: [id], onUpdate: NoAction, map: "fk_we_exercise")
+
+  @@index([workoutDayId], map: "fk_we_day")
+  @@index([exerciseId], map: "fk_we_exercise")
+  @@map("workout_exercises")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model WorkoutPlan {
+  id             String        @id @db.Char(36)
+  organizationId String?       @map("organization_id") @db.Char(36)
+  userId         String?       @map("user_id") @db.Char(36)
+  name           String        @db.VarChar(255)
+  description    String?       @db.Text
+  level          String?       @db.VarChar(50)
+  goal           String?       @db.VarChar(50)
+  durationWeeks  Int           @default(4) @map("duration_weeks")
+  isPremium      Boolean?      @default(false) @map("is_premium")
+  createdAt      DateTime?     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt      DateTime?     @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt      DateTime?     @map("deleted_at") @db.Timestamp(0)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_wp_org")
+  user           User?         @relation(fields: [userId], references: [id], onUpdate: NoAction, map: "fk_wp_user")
+  workoutWeeks   WorkoutWeek[]
+
+  @@index([organizationId], map: "fk_wp_org")
+  @@index([userId], map: "fk_wp_user")
+  @@map("workout_plans")
+}
+
+model WorkoutWeek {
+  id            String       @id @db.Char(36)
+  workoutPlanId String       @map("workout_plan_id") @db.Char(36)
+  weekNumber    Int          @map("week_number")
+  focus         String?      @db.VarChar(255)
+  createdAt     DateTime?    @default(now()) @map("created_at") @db.Timestamp(0)
+  workoutDays   WorkoutDay[]
+  workoutPlan   WorkoutPlan  @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ww_workout_plan")
+
+  @@unique([workoutPlanId, weekNumber], map: "uq_ww_week")
+  @@map("workout_weeks")
+}
